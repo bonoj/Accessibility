@@ -11,6 +11,8 @@
   <main id="app" data-allocation="shared">
     <section id="world" aria-label="Construction world. Drag to orbit. Pinch or use the mouse wheel to change distance."></section>
     <section id="language" aria-label="Language and accessible presentation">
+      <button id="language-handle" type="button" aria-expanded="true" aria-controls="language-content"><span class="handle-mark" aria-hidden="true"></span><span class="handle-label">Language & controls</span></button>
+      <div id="language-content">
       <p class="eyebrow">ACCESSIBILITY · CAMERA WITNESS</p>
       <h1>Camera behavior composes.</h1>
       <p>Each camera is an ECS entity. Orbit is optional behavior attached to it, not a renderer feature.</p>
@@ -48,6 +50,7 @@
       </details>
 
       <p class="build">build {{BUILD_COMMIT}}</p>
+      </div>
     </section>
   </main>
   <div id="diagnostics" role="alert" hidden></div>

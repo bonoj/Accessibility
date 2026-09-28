@@ -24,10 +24,13 @@ The project inherits an executable research practice:
 
 The first apparatus should be small enough that accessibility pressure can shape it from the beginning rather than being retrofitted after its interaction model hardens.
 
+Implementation proceeds in small independently persistent cuts where practical. This is both Git hygiene and research machinery: executable checkpoints keep interruption or model-run timeout from turning a long investigation into one fragile unit of progress.
+
 ## Repository surfaces
 
 - `SEMANTIC_SURFACE.md` — present-tense truths that currently deserve to constrain work.
 - `research/` — observations, hypotheses, prior evidence, and questions worth preserving without granting them authority.
+- `src/probes/` — preserved executable specimens that exercise the shared substrate without defining the product.
 - `changes/` — bounded implementation expeditions once implementation begins: intended uncertainty, evidence sought, actual outcome, and any resulting promotions.
 - `src/` — inspectable implementation source used for ordinary construction work.
 - candidate builds — web-addressable executable evidence assembled by GitHub from exact source commits.
@@ -53,6 +56,6 @@ The repository now has a deliberately minimal executable and a source-first buil
 
 Ordinary work happens in modular source. GitHub assembles source changes into candidates without changing the stable root `index.html`. Accepted candidates can be promoted byte-for-byte without requiring a human to handle executable files.
 
-The implementation itself remains intentionally sparse. The current scene and summoned card are probes rather than a product shell.
+The implementation itself remains intentionally sparse. The first adaptive entity-surface probe is preserved as an executable specimen: a semantic entity owns ECS surface state while DOM and Three.js remain realizations rather than owners. The card experience is evidence, not a product shell.
 
-The next work should investigate forgiving access to capability and progressively extensible construction: how little apparatus must a person personally operate before they can begin making the apparatus more useful for what they are trying to build?
+The next architectural test is to make surface realization an ordinary capability of arbitrary entities. The broader work remains forgiving access to capability and progressively extensible construction: how little apparatus must a person personally operate before they can begin making the apparatus more useful for what they are trying to build?

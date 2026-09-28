@@ -91,6 +91,12 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     }
   }
 
+  function refreshOpen() {
+    for (const [entityId] of realizations) {
+      if (components.SurfaceState.get(entityId)?.open) sync(entityId);
+    }
+  }
+
   function patchEntity(entityId, values) {
     const { state } = resolve(entityId);
     Object.assign(state, values);
@@ -196,6 +202,6 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     get entity() { return activeEntity; },
     get definition() { return resolve(activeEntity).definition; },
     get state() { return resolve(activeEntity).state; },
-    sync, place, openAt, dismiss, toggleCollapsed, toggleExpanded, patch, raise
+    sync, refreshOpen, place, openAt, dismiss, toggleCollapsed, toggleExpanded, patch, raise
   };
 }

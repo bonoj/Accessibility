@@ -32,9 +32,16 @@ Local building is useful for engineering but is not required for the human const
 
 A candidate is identified by the exact source commit from which it was built.
 
-Human preview publication is deliberately separate from candidate provenance. A preview surface may expose the current candidate as an ordinary web page, but it must not write generated candidate files into the source/stable branch.
+Human preview publication is deliberately separate from candidate provenance.
 
-This keeps phone experience a web operation rather than a file-transfer operation without making build output part of ordinary source history.
+GitHub Pages is assembled as a deployment surface rather than committed build output:
+
+- `/` receives the stable root `index.html` from `main`;
+- `/preview/` receives the exact immutable artifact from the successful candidate build currently under inspection.
+
+The Pages deployment does not write either representation back into source history. Candidate preview can therefore remain a one-tap phone web operation without making generated output part of `main` or requiring a second build.
+
+This requires the repository's Pages source to be **GitHub Actions** rather than **Deploy from a branch**.
 
 ## Promotion
 

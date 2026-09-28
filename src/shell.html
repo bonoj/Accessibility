@@ -11,25 +11,26 @@
   <main id="app">
     <section id="world" aria-label="Spatial workstation. Drag to orbit. Pinch or use the mouse wheel to change distance."></section>
   </main>
-  <section id="entity-card" hidden aria-labelledby="entity-title">
+  <template id="entity-surface-template">
+    <section class="entity-card" hidden>
     <header class="surface-header">
       <div>
         <p class="surface-kicker">Scene entity</p>
-        <h1 id="entity-title">Ball</h1>
+        <h1 data-surface-role="title">Ball</h1>
       </div>
       <div class="surface-header-actions">
-        <button id="surface-collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
-        <button id="surface-dismiss" type="button">Dismiss</button>
+        <button data-surface-role="collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
+        <button data-surface-role="dismiss" type="button">Dismiss</button>
       </div>
     </header>
 
-    <div id="surface-body">
-      <p id="entity-description">A simple object in the scene.</p>
+    <div data-surface-role="body">
+      <p data-surface-role="description">A simple object in the scene.</p>
 
       <div class="surface-controls" aria-label="Ball controls">
         <label>
           Text quantity
-          <select id="text-quantity">
+          <select data-surface-role="quantity">
             <option value="short">Short</option>
             <option value="medium">Medium</option>
             <option value="lots">Lots</option>
@@ -38,7 +39,7 @@
 
         <label>
           Font size
-          <select id="font-size">
+          <select data-surface-role="font-size">
             <option value="normal">Normal</option>
             <option value="large">Large</option>
             <option value="huge">Huge</option>
@@ -46,18 +47,19 @@
         </label>
 
         <label>
-          Amount <output id="amount-value">50</output>
-          <input id="amount-slider" type="range" min="0" max="100" value="50">
+          Amount <output data-surface-role="amount-value">50</output>
+          <input data-surface-role="slider" type="range" min="0" max="100" value="50">
         </label>
 
         <div class="surface-actions">
-          <button id="ball-action" type="button">Do something</button>
-          <button id="surface-expand" type="button" aria-pressed="false">Expand</button>
+          <button data-surface-role="action" type="button">Do something</button>
+          <button data-surface-role="expand" type="button" aria-pressed="false">Expand</button>
         </div>
-        <output id="action-status" aria-live="polite">Nothing has happened yet.</output>
+        <output data-surface-role="status" aria-live="polite">Nothing has happened yet.</output>
       </div>
     </div>
-  </section>
+    </section>
+  </template>
   <aside id="debug-tools" aria-label="Temporary build controls">
     <label id="variant-control">
       Surface

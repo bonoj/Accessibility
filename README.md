@@ -56,6 +56,8 @@ The repository now has a deliberately minimal executable and a source-first buil
 
 Ordinary work happens in modular source. GitHub assembles source changes into candidates without changing the stable root `index.html`. Accepted candidates can be promoted byte-for-byte without requiring a human to handle executable files.
 
-The implementation itself remains intentionally sparse. The first adaptive entity-surface probe is preserved as an executable specimen: a semantic entity owns ECS surface state while DOM and Three.js remain realizations rather than owners. The card experience is evidence, not a product shell.
+The implementation itself remains intentionally sparse. Adaptive entity surfaces are now shared ECS-backed machinery rather than a Ball-specific card: Ball and Cube can independently summon, retain, collapse, enlarge, dismiss, reopen, and simultaneously realize their own state through disposable DOM presentation. Interaction can transiently order overlapping surfaces without making that order semantic.
 
-The next architectural test is to make surface realization an ordinary capability of arbitrary entities. The broader work remains forgiving access to capability and progressively extensible construction: how little apparatus must a person personally operate before they can begin making the apparatus more useful for what they are trying to build?
+That mechanism has produced enough executable evidence to stop treating surface architecture as the immediate subject of investigation. The card experience remains a preserved probe, not a product shell or invitation to prebuild a desktop.
+
+The broader work returns to construction pressure: put meaningful things into the sparse apparatus, use it, and let missing capabilities become visible through attempted work. New tools should be earned by friction rather than filled in from an assumed editor vocabulary.

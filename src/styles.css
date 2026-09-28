@@ -1,56 +1,21 @@
-:root {
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  color-scheme: light dark;
-}
-
+:root { font-family: ui-sans-serif, system-ui, sans-serif; color-scheme: light dark; }
 * { box-sizing: border-box; }
-
-html, body { margin: 0; min-height: 100%; }
-
-body {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  background: Canvas;
-  color: CanvasText;
-}
-
-.surface {
-  width: min(42rem, 90vw);
-  padding: 2rem;
-}
-
-.eyebrow {
-  letter-spacing: .12em;
-  opacity: .65;
-}
-
-h1 {
-  font-size: clamp(2rem, 8vw, 4rem);
-  line-height: 1;
-  margin: .25em 0;
-}
-
-p {
-  font-size: 1.1rem;
-  line-height: 1.5;
-}
-
-.build {
-  font-family: ui-monospace, monospace;
-  font-size: .75rem;
-  opacity: .5;
-}
-
+html, body, #app { margin: 0; min-height: 100%; }
+body { min-height: 100dvh; background: Canvas; color: CanvasText; }
+#app { min-height: 100dvh; display: grid; grid-template-rows: minmax(18rem, 1fr) auto; }
+#world { position: relative; min-height: 18rem; overflow: hidden; background: #f1f0eb; }
+#world canvas { display: block; width: 100%; height: 100%; }
+#language { padding: clamp(1.25rem, 5vw, 3rem); border-top: 1px solid color-mix(in srgb, CanvasText 18%, transparent); }
+.eyebrow { margin: 0; letter-spacing: .12em; opacity: .65; }
+h1 { margin: .25em 0; font-size: clamp(2rem, 8vw, 4rem); line-height: 1; }
+p { max-width: 40rem; font-size: 1.1rem; line-height: 1.5; }
+.build { font-family: ui-monospace, monospace; font-size: .75rem; opacity: .5; }
 #diagnostics {
-  position: fixed;
-  inset: auto 1rem 1rem;
-  max-height: 45vh;
-  overflow: auto;
-  padding: 1rem;
-  background: Canvas;
-  color: CanvasText;
-  border: 2px solid currentColor;
-  white-space: pre-wrap;
-  font-family: ui-monospace, monospace;
+  position: fixed; z-index: 1000; inset: auto 1rem 1rem; max-height: 60vh; overflow: auto;
+  padding: 1rem; background: Canvas; color: CanvasText; border: 2px solid currentColor;
+  white-space: pre-wrap; font: .9rem/1.4 ui-monospace, monospace;
+}
+@media (min-width: 52rem) {
+  #app { grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr); grid-template-rows: 100dvh; }
+  #language { overflow: auto; border-top: 0; border-left: 1px solid color-mix(in srgb, CanvasText 18%, transparent); }
 }

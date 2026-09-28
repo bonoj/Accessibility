@@ -60,4 +60,8 @@ The implementation itself remains intentionally sparse. Adaptive entity surfaces
 
 That mechanism has produced enough executable evidence to stop treating surface architecture as the immediate subject of investigation. The card experience remains a preserved probe, not a product shell or invitation to prebuild a desktop.
 
-The broader work returns to construction pressure: put meaningful things into the sparse apparatus, use it, and let missing capabilities become visible through attempted work. New tools should be earned by friction rather than filled in from an assumed editor vocabulary.
+The broader work has now returned to construction pressure. The former Ball has been transformed conversationally into a living orbital system: a dense moving ring field, resonant moons, local perturbation, and a Cube that claims and steals finite ring matter one particle at a time. This probe materially increased behavioral and simulation complexity without first adding an editor, a generic systems API, or a larger ECS framework.
+
+That evidence is preserved in `research/SEMANTIC_ECS_CONSTRUCTION.md`. The current tiny ECS is proving useful as model-facing construction machinery: semantically consequential actors can remain explicit entities while dense subordinate populations stay compact system-owned state. This is an earned working pattern, not a requirement that future domains use the same granularity.
+
+The broader direction remains construction pressure: put meaningful things into the sparse apparatus, use it, and let missing capabilities become visible through attempted work. New tools should be earned by friction rather than filled in from an assumed editor vocabulary.

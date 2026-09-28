@@ -6,6 +6,7 @@ import { createRenderSyncSystem } from "../runtime/render-sync.js";
 import { createCameraSystem } from "../runtime/camera-system.js";
 import { createOrbitSystem } from "../runtime/orbit-system.js";
 import { createLightSystem } from "../runtime/light-system.js";
+import { createSurfaceSystem } from "../runtime/surface-system.js";
 
 export function createApp({ worldMount, diagnostics }) {
   const world = createWorld();
@@ -91,6 +92,7 @@ export function createApp({ worldMount, diagnostics }) {
   const orbit = createOrbitSystem({ world, components, THREE: three.THREE });
   const cameras = createCameraSystem({ world, components, three });
   const lights = createLightSystem({ world, components, three });
+  const surfaces = createSurfaceSystem({ components, entity: witness });
   orbit.applyAll();
 
   function addLight({ name, kind, color, groundColor, intensity, position, castShadow = false }) {
@@ -122,7 +124,7 @@ export function createApp({ worldMount, diagnostics }) {
     components,
     events,
     three,
-    systems: { renderSync, cameras, orbit, lights },
+    systems: { renderSync, cameras, orbit, lights, surfaces },
     entities: { witness, overviewCamera, sideCamera, skyLight, keyLight },
     render,
     inspect: () => ({

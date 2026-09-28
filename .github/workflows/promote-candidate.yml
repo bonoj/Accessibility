@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
     inputs:
       candidate:
-        description: "40-character source commit SHA of the accepted candidate"
-        required: true
+        description: "Optional 40-character source commit SHA; blank promotes the candidate currently deployed at /preview/"
+        required: false
         type: string
 
 permissions:
@@ -34,9 +34,12 @@ jobs:
         id: candidate
         env:
           DISPATCH_CANDIDATE: ${{ inputs.candidate }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ -n "$DISPATCH_CANDIDATE" ]; then
             CANDIDATE="$DISPATCH_CANDIDATE"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            CANDIDATE="$(curl --fail --silent --show-error --location "https://bonoj.github.io/Accessibility/PREVIEW_SOURCE_COMMIT" | tr -d '[:space:]')"
           else
             CANDIDATE="$(tr -d '[:space:]' < .promotion/candidate)"
           fi

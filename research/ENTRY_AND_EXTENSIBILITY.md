@@ -76,6 +76,21 @@ This suggests a useful distinction for Accessibility: complexity itself is not n
 
 The session also reinforced the value of persistent small cuts. Each diagnosed failure could be converted into repository machinery and documentation so that future work inherits the result rather than depending on either participant remembering the debugging session. Git and CI therefore served not only as software-production infrastructure but as durable context for continued human–model construction.
 
+## Execution, persistence, and inference are separate capabilities
+
+The current browser-hosted apparatus already executes a live simulation. Wanting durable state does not imply that the simulation itself should move to a server.
+
+A useful decomposition is:
+
+**browser runtime = active simulation and immediate interaction**  
+**durable backend = state and history that should survive or be shared**  
+**Git = apparatus source and executable lineage**  
+**model inference = an independent capability that may be local or remote when an experiment earns it**
+
+This preserves architectural negative space. A Three.js world may remain entirely browser-hosted while selected semantic state is pushed to and pulled from a durable service. Likewise, adding persistence does not require choosing a model provider, an agent architecture, or continuous server-side execution.
+
+The distinction suggests a small future persistence probe: change semantic state in one running world, persist it, destroy or reload the browser context, and recover that state. A subsequent probe could test the same durable state across two clients. No broader backend architecture is earned merely by posing those experiments.
+
 ## Question now
 
 The immediate question is no longer merely whether an accessible interface can operate a sophisticated construction system.

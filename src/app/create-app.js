@@ -43,6 +43,36 @@ export function createApp({ worldMount, diagnostics }) {
   world.add(witness, components.Surface, structuredClone(probe.surface));
   world.add(witness, components.SurfaceState, structuredClone(probe.surfaceState));
 
+  // A deliberately boring second entity proves that the adaptive surface belongs
+  // to ECS identity rather than to bespoke Ball UI.
+  const cube = world.entity();
+  const cubeObject = new three.THREE.Mesh(
+    new three.THREE.BoxGeometry(1.15, 1.15, 1.15),
+    new three.THREE.MeshStandardMaterial({ color: 0xc8b9a8, roughness: 0.72, metalness: 0.03 })
+  );
+  cubeObject.castShadow = true;
+  three.scene.add(cubeObject);
+  world.add(cube, components.Transform, {
+    position: new three.THREE.Vector3(2.15, 0.575, 0),
+    rotation: new three.THREE.Euler(),
+    scale: new three.THREE.Vector3(1, 1, 1),
+    visible: true
+  });
+  world.add(cube, components.RenderObject, { object: cubeObject });
+  world.add(cube, components.Surface, {
+    title: "Cube",
+    kicker: "ENTITY SURFACE",
+    copy: {
+      short: "A simple cube in the scene.",
+      medium: "A simple cube in the scene. It uses the same adaptive surface machinery as the ball.",
+      lots: "A simple cube in the scene. It uses the same adaptive surface machinery as the ball. This deliberately boring second entity exists to test whether semantic identity can travel cleanly from a spatial selection into one reusable DOM realization without giving the cube bespoke interface code."
+    }
+  });
+  world.add(cube, components.SurfaceState, {
+    ...structuredClone(probe.surfaceState),
+    actionStatus: "Nothing has happened yet."
+  });
+
   function addCamera({ name, projection = "perspective", position, orbit, fov = 48, height = 5 }) {
     const id = world.entity();
     world.add(id, components.Transform, {
@@ -108,7 +138,7 @@ export function createApp({ worldMount, diagnostics }) {
     events,
     three,
     systems: { renderSync, cameras, orbit, lights, surfaces },
-    entities: { witness, overviewCamera, sideCamera, skyLight, keyLight },
+    entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
     render,
     inspect: () => ({
       entities: world.alive.size,

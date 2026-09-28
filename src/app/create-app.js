@@ -22,12 +22,16 @@ export function createApp({ worldMount, diagnostics }) {
   object.castShadow = true;
   three.scene.add(object);
 
-  // Orientation witness: world-fixed ground makes camera motion perceptible without labels.
-  const grid = new three.THREE.GridHelper(14, 14, 0x777777, 0xc8c8c8);
-  grid.position.y = -1.05;
-  three.scene.add(grid);
+  // Minimal physical scene: a real floor rather than an orientation-only grid.
+  const floor = new three.THREE.Mesh(
+    new three.THREE.PlaneGeometry(18, 18),
+    new three.THREE.MeshStandardMaterial({ color: 0xe5e3dc, roughness: 0.92 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  three.scene.add(floor);
   world.add(witness, components.Transform, {
-    position: new three.THREE.Vector3(0, 0, 0),
+    position: new three.THREE.Vector3(0, 1.05, 0),
     rotation: new three.THREE.Euler(),
     scale: new three.THREE.Vector3(1, 1, 1),
     visible: true

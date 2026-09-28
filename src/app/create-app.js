@@ -5,6 +5,7 @@ import { createThreeRuntime } from "../runtime/three-runtime.js";
 import { createRenderSyncSystem } from "../runtime/render-sync.js";
 import { createCameraSystem } from "../runtime/camera-system.js";
 import { createOrbitSystem } from "../runtime/orbit-system.js";
+import { createLightSystem } from "../runtime/light-system.js";
 
 export function createApp({ worldMount, diagnostics }) {
   const world = createWorld();
@@ -64,16 +65,28 @@ export function createApp({ worldMount, diagnostics }) {
 
   const orbit = createOrbitSystem({ world, components, THREE: three.THREE });
   const cameras = createCameraSystem({ world, components, three });
+  const lights = createLightSystem({ world, components, three });
   orbit.applyAll();
 
-  three.scene.add(new three.THREE.HemisphereLight(0xfffbf2, 0xb9b8b2, 2.2));
-  const key = new three.THREE.DirectionalLight(0xfff5df, 2.4);
-  key.position.set(4, 7, 5);
-  key.castShadow = true;
-  three.scene.add(key);
+  function addLight({ name, kind, color, groundColor, intensity, position, castShadow = false }) {
+    const id = world.entity();
+    world.add(id, components.Transform, {
+      position: new three.THREE.Vector3(...position),
+      rotation: new three.THREE.Euler(),
+      scale: new three.THREE.Vector3(1, 1, 1),
+      visible: true
+    });
+    world.add(id, components.Light, { name, kind, color, groundColor, intensity, castShadow });
+    return id;
+  }
+
+  const skyLight = addLight({ name: "Sky", kind: "hemisphere", color: 0xfffbf2, groundColor: 0xb9b8b2, intensity: 2.2, position: [0, 5, 0] });
+  const keyLight = addLight({ name: "Key", kind: "directional", color: 0xfff5df, intensity: 2.4, position: [4, 7, 5], castShadow: true });
+  lights.syncAll();
 
   function render() {
     orbit.applyAll();
+    lights.syncAll();
     renderSync();
     cameras.render();
   }
@@ -84,14 +97,15 @@ export function createApp({ worldMount, diagnostics }) {
     components,
     events,
     three,
-    systems: { renderSync, cameras, orbit },
-    entities: { witness, overviewCamera, sideCamera },
+    systems: { renderSync, cameras, orbit, lights },
+    entities: { witness, overviewCamera, sideCamera, skyLight, keyLight },
     render,
     inspect: () => ({
       entities: world.alive.size,
       build: globalThis.__ACCESSIBILITY_BUILD__,
       pixelRatio: three.renderer.getPixelRatio(),
       activeCamera: cameras.activeId(),
+      lights: lights.inspect(),
       cameras: cameras.inspect().map(camera => ({
         ...camera,
         orbit: orbit.inspect(camera.id)

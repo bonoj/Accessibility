@@ -21,9 +21,27 @@ Complexity may emerge in the thing being built without requiring equivalent comp
 
 ### Accessibility is the substrate
 
-Accessibility is not synonymous with voice control, large text, disability accommodation, novice mode, or any other single feature.
+Accessibility is not synonymous with voice control, large text, disability accommodation, novice mode, 3D interaction, or any other single feature.
 
 Individual mechanisms may be important, but the project investigates the accessibility of the construction relationship as a whole.
+
+### Lower entry barriers without narrowing construction
+
+The apparatus should reduce how much interface machinery, implementation ceremony, prerequisite vocabulary, and physical precision a person must personally operate before beginning useful executable inquiry.
+
+That reduction must not be purchased by confining later work to a preauthored catalog of tools or outcomes.
+
+The working target is an extensible construction substrate: make the first meaningful experiment inexpensive while preserving the ability for people, with model assistance where useful, to extend the apparatus toward tools the original system did not anticipate.
+
+A capable model may carry implementation complexity that does not need to appear in the human interaction surface. This is part of the accessibility hypothesis, not a reason to hide consequential behavior or remove human judgment.
+
+### 3D is a first-class capability, not a prerequisite
+
+Navigable 3D worlds are an important capability under investigation and a useful stress test for interaction assumptions.
+
+They are not the required construction medium.
+
+No essential project capability should be defined as inherently spatial merely because the current apparatus uses Three.js. Spatial, textual, conversational, image-based, diagrammatic, or other representations may coexist when evidence earns them. A person should not have to master a 3D representation merely to reach another useful representation of the same work.
 
 ### Multiple forms of reference should remain possible
 
@@ -43,7 +61,9 @@ When a Three.js or similar spatial runtime is used, language and detailed readin
 
 ### Precision is not a prerequisite for expressive power
 
-Do not make fine motor precision, dense visual targeting, hidden gestures, or similarly fragile interaction a necessary gateway to sophisticated construction unless executable evidence demonstrates that a particular operation truly requires it.
+Do not make fine motor precision, dense visual targeting, hidden gestures, coordinated multi-touch gestures, or similarly fragile interaction a necessary gateway to sophisticated construction unless executable evidence demonstrates that a particular operation truly requires it.
+
+Where possible, precision and simultaneity should improve efficiency rather than determine whether a capability is available at all. Accidental or imprecise input should be cheap to recover from.
 
 ### Incomplete ideas are legitimate starting material
 
@@ -122,6 +142,8 @@ There is currently no commitment to:
 
 ## Present finish line
 
-The repository now has the minimum build/promotion substrate needed for executable work. The next bounded expedition should use that substrate to test a small accessibility uncertainty rather than expand infrastructure for its own sake.
+The repository now has enough build/runtime substrate to investigate entry and extensibility through executable use.
+
+The current scene and card are probes, not the target product. Near-term work should test whether consequential capabilities can be reached through forgiving, coarse interaction and whether the apparatus can progressively support construction without turning into a fixed catalog of editor features.
 
 Preserving negative space is preferable to filling the repository with speculative interface machinery.

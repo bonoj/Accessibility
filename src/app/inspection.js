@@ -94,7 +94,14 @@ export function installInspection({ app, root }) {
     const travel = Math.hypot(event.clientX - start.x, event.clientY - start.y);
     if (travel < 10 && performance.now() - start.t < 420) {
       const entity = hitSurfaceEntity(event.clientX, event.clientY);
-      if (entity != null) surface.openAt(event.clientX, event.clientY, entity);
+      if (entity != null) {
+        // Do not realize interactive DOM during the pointerup that selected it.
+        // Mobile browsers may synthesize a click after pointerup and hit-test the
+        // newly appeared surface, accidentally activating whatever landed under
+        // the finger (including Collapse or a select). Realize on the next frame
+        // so the selecting gesture finishes against the world it began in.
+        requestAnimationFrame(() => surface.openAt(event.clientX, event.clientY, entity));
+      }
     }
   });
 

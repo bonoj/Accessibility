@@ -45,7 +45,9 @@ This requires the repository's Pages source to be **GitHub Actions** rather than
 
 ## Promotion
 
-Promotion accepts the source-commit identity of an already built candidate.
+Promotion normally means **promote the candidate currently deployed at `/preview/`**. The Pages surface publishes that preview's source identity as machine-readable deployment metadata, so the human does not need to transcribe a commit SHA. An explicit source SHA remains available as an engineering/debug escape hatch.
+
+Promotion ultimately resolves the source-commit identity of an already built candidate.
 
 The **Promote candidate** workflow validates that candidate, copies its existing bytes to root `index.html`, verifies byte equality, and commits the result to `main`.
 

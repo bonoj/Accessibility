@@ -95,11 +95,15 @@ Its usefulness must still be tested through executable evidence. If it fails to 
 
 ### Semantic state should survive representation
 
-The first adaptive entity-surface probe has earned a concrete separation: meaningful entity and surface state belongs to the semantic ECS world, while Three.js and DOM are disposable realizations of that state.
+Adaptive entity-surface work has now earned a stronger concrete separation: meaningful entity and surface state belongs to the semantic ECS world, while Three.js and DOM are disposable realizations of that state.
 
 A spatial object may summon a reflowable web surface without either representation becoming the owner of the entity. The language surface may temporarily claim the entire viewport while the spatial runtime continues underneath.
 
-This does not require every entity to have a permanently realized DOM tree, nor does it yet decide how many surfaces may be simultaneously realized.
+Surface realization is now an ordinary capability of more than one ECS entity. Multiple entities can hold independent surface state and can be realized simultaneously through shared machinery. Their surfaces may overlap; interaction transiently raises a surface without making foreground/background order semantic priority. Dismissing or changing one surface does not destroy another entity's surface state.
+
+The interaction probes also earned two small presentation constraints. A gesture that summons an interactive representation should finish against the representation in which it began rather than accidentally operating newly appeared controls. Surface placement may require DOM measurement, but that measurement need not be visibly exposed to the person.
+
+These results do not require every entity to have a permanently realized DOM tree, nor do they establish a desktop, window manager, persistent surface ordering, or universal entity UI. The adaptive surface is useful machinery that can now recede while construction continues.
 
 ### Source and executable are dual surfaces
 

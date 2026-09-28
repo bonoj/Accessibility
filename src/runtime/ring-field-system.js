@@ -34,20 +34,33 @@ export function createRingFieldSystem({ THREE, parent, count = 1600 }) {
       verticalFrequency: 0.22 + random() * 0.31,
       verticalPhase: random() * Math.PI * 2,
       radialPhase: random() * Math.PI * 2,
-      disturbance: 0
+      disturbance: 0,
+      present: true
     });
   }
 
   const dummy = new THREE.Object3D();
   const clearers = [];
+  const collectors = [];
 
   function addClearer(clearer) {
     clearers.push(clearer);
   }
 
+  function addCollector(collector) {
+    collectors.push(collector);
+  }
+
   function update(dt, timeSeconds) {
     for (let i = 0; i < particles.length; i += 1) {
       const particle = particles[i];
+      if (!particle.present) {
+        dummy.position.set(0, -1000, 0);
+        dummy.scale.setScalar(0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        continue;
+      }
       particle.angle = (particle.angle + particle.rate * dt) % (Math.PI * 2);
       const baseRadius = particle.homeRadius + Math.sin(timeSeconds * 0.12 + particle.radialPhase) * 0.012;
       let disturbance = 0;
@@ -70,7 +83,27 @@ export function createRingFieldSystem({ THREE, parent, count = 1600 }) {
       const y = Math.sin(timeSeconds * particle.verticalFrequency + particle.verticalPhase) * particle.verticalAmplitude
         + particle.disturbance * 0.035 * Math.sin(particle.angle * 7 + particle.verticalPhase);
 
-      dummy.position.set(Math.cos(particle.angle) * displacedRadius, y, Math.sin(particle.angle) * displacedRadius);
+      const localX = Math.cos(particle.angle) * displacedRadius;
+      const localZ = Math.sin(particle.angle) * displacedRadius;
+      for (const collector of collectors) {
+        const dx = localX - collector.localPosition.x;
+        const dy = y - collector.localPosition.y;
+        const dz = localZ - collector.localPosition.z;
+        if (Math.hypot(dx, dy, dz) <= collector.radius) {
+          particle.present = false;
+          collector.collect(1);
+          break;
+        }
+      }
+      if (!particle.present) {
+        dummy.position.set(0, -1000, 0);
+        dummy.scale.setScalar(0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        continue;
+      }
+
+      dummy.position.set(localX, y, localZ);
       const scale = 0.7 + (i % 9) * 0.045;
       dummy.scale.setScalar(scale);
       dummy.updateMatrix();
@@ -79,5 +112,5 @@ export function createRingFieldSystem({ THREE, parent, count = 1600 }) {
     mesh.instanceMatrix.needsUpdate = true;
   }
 
-  return { mesh, particles, bands, addClearer, update };
+  return { mesh, particles, bands, addClearer, addCollector, update };
 }

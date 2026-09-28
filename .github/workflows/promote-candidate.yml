@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 concurrency:
   group: accessibility-promotion
@@ -92,3 +92,10 @@ jobs:
           git commit -m "Promote candidate $CANDIDATE"
           git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Publish promoted stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE: ${{ steps.candidate.outputs.sha }}
+        run: |
+          gh workflow run pages.yml --ref main -f candidate="$CANDIDATE"

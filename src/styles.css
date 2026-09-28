@@ -6,11 +6,33 @@ body { height: 100dvh; overflow: hidden; background: #f1f0eb; }
 #world canvas { display: block; width: 100%; height: 100%; }
 #diagnostics { position: fixed; z-index: 1000; inset: auto 1rem 1rem; max-height: 60vh; overflow: auto; padding: 1rem; background: Canvas; color: CanvasText; border: 2px solid currentColor; white-space: pre-wrap; font: .9rem/1.4 ui-monospace, monospace; }
 
-#debug-tools { position: fixed; z-index: 900; right: max(.6rem, env(safe-area-inset-right)); bottom: max(.6rem, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: .45rem; font: 12px/1.2 ui-monospace, monospace; }
+#debug-tools { position: fixed; z-index: 900; right: max(.6rem, env(safe-area-inset-right)); bottom: max(.6rem, env(safe-area-inset-bottom)); display: flex; align-items: end; gap: .45rem; font: 12px/1.2 ui-monospace, monospace; }
+#variant-control { display: grid; gap: .18rem; padding: .35rem .45rem; border-radius: .4rem; background: color-mix(in srgb, Canvas 88%, transparent); color: CanvasText; }
+#surface-variant { min-height: 2.1rem; font: inherit; }
 #build-id { padding: .42rem .5rem; border-radius: .4rem; background: color-mix(in srgb, Canvas 88%, transparent); color: CanvasText; }
 #debug-refresh { min-height: 2.1rem; padding: .4rem .65rem; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: .45rem; background: color-mix(in srgb, Canvas 92%, transparent); color: CanvasText; font: inherit; }
 
-#entity-card { position: fixed; z-index: 800; width: min(22rem, calc(100vw - 2rem)); padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: .8rem; background: color-mix(in srgb, Canvas 96%, transparent); color: CanvasText; box-shadow: 0 .5rem 2rem #0002; }
+#entity-card { position: fixed; z-index: 800; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: .8rem; background: color-mix(in srgb, Canvas 96%, transparent); color: CanvasText; box-shadow: 0 .5rem 2rem #0002; font-size: 1rem; }
 #entity-card[hidden] { display: none; }
-#entity-card h1 { margin: 0 0 .35rem; font-size: 1.35rem; }
-#entity-card p { margin: 0; line-height: 1.45; }
+#entity-card[data-size="large"] { font-size: 1.5rem; }
+#entity-card[data-size="huge"] { font-size: 2.25rem; }
+#entity-card[data-expanded="true"] { inset: 0 !important; width: 100%; max-height: none; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
+#entity-card[data-variant="edge"]:not([data-expanded="true"]) { left: 1rem !important; top: 1rem !important; bottom: 1rem; max-height: none; }
+#entity-card[data-variant="center"]:not([data-expanded="true"]) { left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); }
+#entity-card[data-variant="sheet"]:not([data-expanded="true"]) { left: 1rem !important; right: 1rem; bottom: 1rem; top: auto !important; width: auto; max-height: min(70dvh, 42rem); }
+.surface-header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.surface-kicker { margin: 0 0 .2rem; font-size: .72em; opacity: .65; text-transform: uppercase; letter-spacing: .08em; }
+#entity-card h1 { margin: 0; font-size: 1.35em; }
+#entity-description { margin: .8rem 0 1rem; line-height: 1.5; }
+.surface-controls { display: grid; gap: .85rem; }
+.surface-controls label { display: grid; gap: .35rem; }
+.surface-controls select, .surface-controls input, .surface-controls button, #surface-dismiss { min-height: 2.75rem; font: inherit; }
+.surface-controls select, .surface-controls button, #surface-dismiss { padding: .45rem .65rem; }
+.surface-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.surface-actions button { flex: 1 1 7rem; }
+#action-status { display: block; min-height: 1.5em; line-height: 1.4; }
+#surface-body[hidden] { display: none; }
+@media (max-width: 28rem) {
+  #entity-card[data-size="huge"] { font-size: 2rem; }
+  #debug-tools { max-width: calc(100vw - 1.2rem); flex-wrap: wrap; justify-content: end; }
+}

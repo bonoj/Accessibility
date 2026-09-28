@@ -93,6 +93,26 @@ ECS is therefore an implementation hypothesis chosen for the accessibility probl
 
 Its usefulness must still be tested through executable evidence. If it fails to preserve that separation or creates greater barriers than it removes, the architecture may change.
 
+### Systems mutate semantic state; the frame owns presentation
+
+The first behavioral-system work has earned a scheduling boundary that should constrain subsequent runtime work.
+
+Input interpretation and ECS systems may mutate semantic component state many times between display frames. Those mutations do not independently request pixels. The animation-frame loop is the sole owner of the recurring presentation pass: it advances time-dependent systems, allows their mutations to accumulate into one coherent world state, synchronizes representations from that state, and renders the spatial view once.
+
+The current frame shape is therefore approximately:
+
+**input accumulates semantic changes → behavioral systems update world state → semantic presentation data is projected where the domain chooses → realized surfaces synchronize → spatial presentation systems synchronize → one camera render**
+
+This is deliberately a boundary rather than a promise of a particular scheduler. Fixed simulation steps, interpolation, dirty tracking, staged dependencies, or other machinery may be earned later. The present constraint is smaller:
+
+**systems produce world state; they do not independently demand rendering.**
+
+The same applies as entity and component counts grow. A frame may contain many component mutations without multiplying spatial render passes. Input handlers should mutate state rather than call the renderer directly. New systems should not receive a general-purpose render callback merely for convenience.
+
+DOM surfaces are not required to update for every semantic mutation. The substrate supports resynchronizing an open realization from its semantic Surface and SurfaceState, but the constructed domain decides which world facts deserve projection into a given representation.
+
+This boundary was earned through executable failure: allowing interaction paths to invoke a self-scheduling render function created multiple permanent animation loops and an impossible measured rate of thousands of frames per second. Separating immediate state mutation from the sole frame-owned render pass removed that class of failure and makes subsequent systems harder to compose incorrectly.
+
 ### Semantic state should survive representation
 
 Adaptive entity-surface work has now earned a stronger concrete separation: meaningful entity and surface state belongs to the semantic ECS world, while Three.js and DOM are disposable realizations of that state.

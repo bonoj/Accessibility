@@ -73,6 +73,7 @@ jobs:
         run: |
           test -s site/preview/index.html
           printf '%s\n' "$CANDIDATE_SHA" > site/preview/SOURCE_COMMIT
+          printf '%s\n' "$CANDIDATE_SHA" > site/PREVIEW_SOURCE_COMMIT
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

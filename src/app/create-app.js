@@ -121,7 +121,9 @@ export function createApp({ worldMount, diagnostics }) {
   const cubeLocalPosition = saturn.worldToLocal(cubeWorldPosition.clone());
   ringField.addCollector({
     localPosition: cubeLocalPosition,
-    radius: 0.72,
+    acquisitionRadius: 3.4,
+    captureRadius: 0.16,
+    pullRate: 0.62,
     collect(amount) { cubeInventory.count += amount; }
   });
 

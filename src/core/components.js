@@ -11,6 +11,9 @@ export function createCoreComponents(world) {
     LightView: world.component("LightView"),
     Surface: world.component("Surface"),
     SurfaceState: world.component("SurfaceState"),
+    Producer: world.component("Producer"),
+    Inventory: world.component("Inventory"),
+    Collectible: world.component("Collectible"),
 
     // Optional behavior data. Cameras without it remain ordinary static camera entities.
     OrbitBehavior: world.component("OrbitBehavior")

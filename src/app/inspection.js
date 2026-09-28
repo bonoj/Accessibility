@@ -10,6 +10,7 @@ export function installInspection({ app, root }) {
   const state = root.querySelector("#camera-state");
   const refresh = root.querySelector("#refresh-state");
   const world = root.querySelector("#world");
+  const languageHandle = root.querySelector("#language-handle");
 
   for (const camera of app.systems.cameras.inspect()) {
     const option = document.createElement("option");
@@ -64,6 +65,30 @@ export function installInspection({ app, root }) {
     render: app.render,
     onChange: showState
   });
+
+  let sheetStartY = null;
+  function setSheet(collapsed) {
+    root.dataset.sheet = collapsed ? "collapsed" : "expanded";
+    languageHandle.setAttribute("aria-expanded", String(!collapsed));
+    requestAnimationFrame(() => { app.render(); showState(); });
+  }
+  setSheet(false);
+
+  languageHandle.addEventListener("click", () => {
+    setSheet(root.dataset.sheet !== "collapsed");
+  });
+  languageHandle.addEventListener("pointerdown", event => {
+    sheetStartY = event.clientY;
+    languageHandle.setPointerCapture?.(event.pointerId);
+  });
+  languageHandle.addEventListener("pointerup", event => {
+    if (sheetStartY == null) return;
+    const dy = event.clientY - sheetStartY;
+    sheetStartY = null;
+    if (dy < -36) setSheet(false);
+    else if (dy > 36) setSheet(true);
+  });
+  languageHandle.addEventListener("pointercancel", () => { sheetStartY = null; });
 
   refresh.addEventListener("click", showState);
   showState();

@@ -67,6 +67,7 @@ export function installInspection({ app, root }) {
   });
 
   let sheetStartY = null;
+  let sheetDragged = false;
   function setSheet(collapsed) {
     root.dataset.sheet = collapsed ? "collapsed" : "expanded";
     languageHandle.setAttribute("aria-expanded", String(!collapsed));
@@ -75,11 +76,16 @@ export function installInspection({ app, root }) {
   setSheet(false);
 
   languageHandle.addEventListener("click", () => {
+    if (sheetDragged) { sheetDragged = false; return; }
     setSheet(root.dataset.sheet !== "collapsed");
   });
   languageHandle.addEventListener("pointerdown", event => {
     sheetStartY = event.clientY;
+    sheetDragged = false;
     languageHandle.setPointerCapture?.(event.pointerId);
+  });
+  languageHandle.addEventListener("pointermove", event => {
+    if (sheetStartY != null && Math.abs(event.clientY - sheetStartY) > 12) sheetDragged = true;
   });
   languageHandle.addEventListener("pointerup", event => {
     if (sheetStartY == null) return;

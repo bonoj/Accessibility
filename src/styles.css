@@ -9,7 +9,7 @@ body { height: 100dvh; overflow: hidden; background: #f1f0eb; }
 #debug-tools { position: fixed; z-index: 900; right: max(.6rem, env(safe-area-inset-right)); bottom: max(.6rem, env(safe-area-inset-bottom)); display: flex; align-items: end; gap: .45rem; font: 12px/1.2 ui-monospace, monospace; }
 #variant-control { display: grid; gap: .18rem; padding: .35rem .45rem; border-radius: .4rem; background: color-mix(in srgb, Canvas 88%, transparent); color: CanvasText; }
 #surface-variant { min-height: 2.1rem; font: inherit; }
-#build-id { padding: .42rem .5rem; border-radius: .4rem; background: color-mix(in srgb, Canvas 88%, transparent); color: CanvasText; }
+#fps-counter, #build-id { padding: .42rem .5rem; border-radius: .4rem; background: color-mix(in srgb, Canvas 88%, transparent); color: CanvasText; }
 #debug-refresh { min-height: 2.1rem; padding: .4rem .65rem; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: .45rem; background: color-mix(in srgb, Canvas 92%, transparent); color: CanvasText; font: inherit; }
 
 .entity-card { --base-font-size: 1rem; --pinch-scale: 1; position: fixed; z-index: 800; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: .8rem; background: color-mix(in srgb, Canvas 96%, transparent); color: CanvasText; box-shadow: 0 .5rem 2rem #0002; font-size: calc(var(--base-font-size) * var(--pinch-scale)); touch-action: pan-y; }

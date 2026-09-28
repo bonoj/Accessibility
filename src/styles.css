@@ -9,3 +9,8 @@ body { height: 100dvh; overflow: hidden; background: #f1f0eb; }
 #debug-tools { position: fixed; z-index: 900; right: max(.6rem, env(safe-area-inset-right)); bottom: max(.6rem, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: .45rem; font: 12px/1.2 ui-monospace, monospace; }
 #build-id { padding: .42rem .5rem; border-radius: .4rem; background: color-mix(in srgb, Canvas 88%, transparent); color: CanvasText; }
 #debug-refresh { min-height: 2.1rem; padding: .4rem .65rem; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: .45rem; background: color-mix(in srgb, Canvas 92%, transparent); color: CanvasText; font: inherit; }
+
+#entity-card { position: fixed; z-index: 800; width: min(22rem, calc(100vw - 2rem)); padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: .8rem; background: color-mix(in srgb, Canvas 96%, transparent); color: CanvasText; box-shadow: 0 .5rem 2rem #0002; }
+#entity-card[hidden] { display: none; }
+#entity-card h1 { margin: 0 0 .35rem; font-size: 1.35rem; }
+#entity-card p { margin: 0; line-height: 1.45; }

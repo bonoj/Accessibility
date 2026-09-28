@@ -1,3 +1,4 @@
+// Builds are observations of source; publication is separate.
 import { installDiagnostics } from "./runtime/diagnostics.js";
 import { createApp } from "./app/create-app.js";
 

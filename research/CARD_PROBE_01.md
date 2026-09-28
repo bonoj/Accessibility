@@ -6,11 +6,11 @@
 
 ## Probe
 
-A sparse Three.js scene contains a single ball on a plane. Selecting the ball summons an ordinary DOM surface associated with the same semantic entity.
+A sparse Three.js scene began with a ball on a plane. Selecting the ball summons an ordinary DOM surface associated with the same semantic entity. A deliberately boring cube was then added to test whether the mechanism generalized without bespoke cube UI.
 
-The surface can remain contextual, move through several experimental placements, expand to the viewport, reflow at large text sizes, scroll when necessary, collapse, and dismiss while the Three.js world continues underneath.
+The surfaces can remain contextual, move through several experimental placements, expand to the viewport, reflow at large text sizes, scroll when necessary, collapse, and dismiss while the Three.js world continues underneath.
 
-The preserved specimen supplies the ball's surface definition and initial state. The host supplies the ECS, Three.js realization, input routing, and DOM surface system.
+The preserved specimen supplies initial surface definition and state. The host supplies the ECS, Three.js realization, input routing, and DOM surface system.
 
 ## Evidence earned
 
@@ -20,25 +20,33 @@ The same semantic capability can tolerate substantially different presentation s
 
 Coarse explicit controls for text quantity, font size, expansion, collapse, and dismissal can coexist with pinch enlargement. Pinch is therefore an accelerator rather than the only route to enlarged text.
 
-Two failures were especially informative:
+Several interaction failures were informative:
 
 - dismissing on an imprecise outside touch made a missed gesture destructive;
-- preserving transient pinch magnification across collapse or dismissal made the next encounter jarringly inherit old presentation state.
+- preserving transient pinch magnification across collapse or dismissal made the next encounter jarringly inherit old presentation state;
+- realizing interactive DOM during the pointer release that selected an entity allowed the opening gesture to click through into newly appeared controls;
+- showing a floating surface before its measured placement settled exposed a small visible positioning jiggle.
 
-The current probe therefore uses deliberate dismissal and resets transient pinch magnification when collapsing or dismissing.
+The resulting machinery uses deliberate dismissal, resets transient pinch magnification when collapsing or dismissing, lets the selecting gesture finish before realizing interactive DOM, and hides placement measurement until the surface has settled.
 
 ## Architecture earned
 
-The ball owns `Surface` and `SurfaceState` ECS data. Meaningful surface state does not belong to the DOM realization.
+Entities own `Surface` and `SurfaceState` ECS data. Meaningful surface state does not belong to DOM realization.
 
-The DOM is disposable presentation machinery in the same broad sense that a Three.js object is presentation machinery for spatial state. This probe does not establish that every entity needs a permanently realized DOM tree or that only one surface may ever be visible.
+The DOM is disposable presentation machinery in the same broad sense that a Three.js object is presentation machinery for spatial state.
 
-The specimen is evidence, not a universal surface specification. Future probes may use the same substrate without inheriting this ball, copy, controls, layout, or interaction choices.
+The arbitrary-entity test succeeded: Ball and Cube use the same surface machinery while retaining independent semantic state. The simultaneous-realization test also succeeded: both surfaces can remain open, be changed, collapsed, dismissed, and reopened independently. Interaction raises the touched surface when overlap requires ordering, but z-order carries no semantic priority.
 
-## Initial regression
+The realization is template-driven rather than a set of entity-specific DOM IDs and handlers. Adding the cube did not require a cube-specific surface implementation.
 
-After the ECS migration, the preview at the `...9d5` cut was briefly inspected by the human collaborator and reported to look good. Treat this as an initial experiential regression check, not exhaustive validation.
+The specimen remains evidence, not a universal surface specification. These results do not establish that every entity needs a DOM surface, that surfaces should always coexist, or that the apparatus should grow desktop/window-management machinery.
 
-## Open edge
+## Experiential regression
 
-The current SurfaceSystem is still instantiated for the witness ball. The next architectural test is whether surface realization can become an ordinary capability of arbitrary entities without turning the system into a bespoke application UI.
+The human collaborator exercised the Ball and Cube surfaces through the deployed candidates and reported both executions flawless once the click-through and placement-settling repairs landed. This is experiential evidence rather than exhaustive automated validation.
+
+## Boundary reached
+
+The original open edge—whether surface realization could become an ordinary capability of arbitrary entities without becoming bespoke application UI—has been answered sufficiently for this probe.
+
+Further surface architecture should now be pulled by construction pressure rather than extended speculatively. The next useful evidence should come from putting meaningful things into the sparse world and noticing which capabilities become necessary.

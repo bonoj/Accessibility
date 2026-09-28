@@ -51,6 +51,10 @@ The **Promote candidate** workflow validates that candidate, copies its existing
 
 Promotion does **not** rebuild.
 
+Candidate artifacts are created by the separate **Build candidate** workflow. Artifact discovery may be repository-wide, but `actions/download-artifact` normally resolves artifacts in the current workflow run. Promotion therefore downloads the already-resolved immutable artifact ID through GitHub's Actions artifact API. This cross-workflow boundary is intentional: do not replace it with a current-run artifact download unless the workflow architecture itself changes.
+
+Before allowing promotion to write stable output, the transport seam may be tested independently: resolve a known candidate artifact, download it by immutable artifact ID, unpack it, verify the embedded candidate SHA, and compare its digest without copying it to root `index.html` or committing anything.
+
 Therefore:
 
 **conversation → source change → clean GitHub build → web candidate → human acceptance → exact-byte promotion → stable index.html**

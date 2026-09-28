@@ -35,7 +35,9 @@ export function createRingFieldSystem({ THREE, parent, count = 1600 }) {
       verticalPhase: random() * Math.PI * 2,
       radialPhase: random() * Math.PI * 2,
       disturbance: 0,
-      present: true
+      present: true,
+      claimedBy: null,
+      pull: 0
     });
   }
 
@@ -52,15 +54,14 @@ export function createRingFieldSystem({ THREE, parent, count = 1600 }) {
   }
 
   function update(dt, timeSeconds) {
+    const positions = new Array(particles.length);
+
+    // First let the ring and perturbation systems establish this frame's natural
+    // particle positions. Collection competes with that result rather than
+    // replacing orbital behavior.
     for (let i = 0; i < particles.length; i += 1) {
       const particle = particles[i];
-      if (!particle.present) {
-        dummy.position.set(0, -1000, 0);
-        dummy.scale.setScalar(0);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-        continue;
-      }
+      if (!particle.present) continue;
       particle.angle = (particle.angle + particle.rate * dt) % (Math.PI * 2);
       const baseRadius = particle.homeRadius + Math.sin(timeSeconds * 0.12 + particle.radialPhase) * 0.012;
       let disturbance = 0;
@@ -80,32 +81,75 @@ export function createRingFieldSystem({ THREE, parent, count = 1600 }) {
 
       particle.disturbance = Math.max(disturbance, particle.disturbance - dt * 0.34);
       const displacedRadius = baseRadius + particle.disturbance * 0.16 * Math.sign(Math.sin(particle.radialPhase) || 1);
-      const y = Math.sin(timeSeconds * particle.verticalFrequency + particle.verticalPhase) * particle.verticalAmplitude
-        + particle.disturbance * 0.035 * Math.sin(particle.angle * 7 + particle.verticalPhase);
+      positions[i] = {
+        x: Math.cos(particle.angle) * displacedRadius,
+        y: Math.sin(timeSeconds * particle.verticalFrequency + particle.verticalPhase) * particle.verticalAmplitude
+          + particle.disturbance * 0.035 * Math.sin(particle.angle * 7 + particle.verticalPhase),
+        z: Math.sin(particle.angle) * displacedRadius
+      };
+    }
 
-      const localX = Math.cos(particle.angle) * displacedRadius;
-      const localZ = Math.sin(particle.angle) * displacedRadius;
-      for (const collector of collectors) {
-        const dx = localX - collector.localPosition.x;
-        const dy = y - collector.localPosition.y;
-        const dz = localZ - collector.localPosition.z;
-        if (Math.hypot(dx, dy, dz) <= collector.radius) {
-          particle.present = false;
-          collector.collect(1);
-          break;
+    // Each collector owns at most one claim. If idle, it claims the nearest
+    // currently realized particle inside acquisition range.
+    for (const collector of collectors) {
+      let claimedIndex = particles.findIndex(particle => particle.present && particle.claimedBy === collector);
+      if (claimedIndex < 0) {
+        let nearestIndex = -1;
+        let nearestDistance = collector.acquisitionRadius;
+        for (let i = 0; i < particles.length; i += 1) {
+          const particle = particles[i];
+          const position = positions[i];
+          if (!particle.present || particle.claimedBy || !position) continue;
+          const distance = Math.hypot(
+            position.x - collector.localPosition.x,
+            position.y - collector.localPosition.y,
+            position.z - collector.localPosition.z
+          );
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestIndex = i;
+          }
+        }
+        if (nearestIndex >= 0) {
+          particles[nearestIndex].claimedBy = collector;
+          particles[nearestIndex].pull = 0;
+          claimedIndex = nearestIndex;
         }
       }
-      if (!particle.present) {
+
+      if (claimedIndex >= 0) {
+        const particle = particles[claimedIndex];
+        const position = positions[claimedIndex];
+        particle.pull = Math.min(1, particle.pull + dt * collector.pullRate);
+        const eased = particle.pull * particle.pull * (3 - 2 * particle.pull);
+        position.x += (collector.localPosition.x - position.x) * eased;
+        position.y += (collector.localPosition.y - position.y) * eased;
+        position.z += (collector.localPosition.z - position.z) * eased;
+
+        const distance = Math.hypot(
+          position.x - collector.localPosition.x,
+          position.y - collector.localPosition.y,
+          position.z - collector.localPosition.z
+        );
+        if (distance <= collector.captureRadius || particle.pull >= 1) {
+          particle.present = false;
+          particle.claimedBy = null;
+          particle.pull = 0;
+          collector.collect(1);
+        }
+      }
+    }
+
+    for (let i = 0; i < particles.length; i += 1) {
+      const particle = particles[i];
+      const position = positions[i];
+      if (!particle.present || !position) {
         dummy.position.set(0, -1000, 0);
         dummy.scale.setScalar(0);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-        continue;
+      } else {
+        dummy.position.set(position.x, position.y, position.z);
+        dummy.scale.setScalar(0.7 + (i % 9) * 0.045);
       }
-
-      dummy.position.set(localX, y, localZ);
-      const scale = 0.7 + (i % 9) * 0.045;
-      dummy.scale.setScalar(scale);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     }

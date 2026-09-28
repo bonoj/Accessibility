@@ -21,13 +21,14 @@ body { height: 100dvh; overflow: hidden; background: #f1f0eb; }
 #entity-card[data-variant="center"]:not([data-expanded="true"]) { left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); }
 #entity-card[data-variant="sheet"]:not([data-expanded="true"]) { left: 1rem !important; right: 1rem; bottom: 1rem; top: auto !important; width: auto; max-height: min(70dvh, 42rem); }
 .surface-header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.surface-header-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: .4rem; }
 .surface-kicker { margin: 0 0 .2rem; font-size: .72em; opacity: .65; text-transform: uppercase; letter-spacing: .08em; }
 #entity-card h1 { margin: 0; font-size: 1.35em; }
 #entity-description { margin: .8rem 0 1rem; line-height: 1.5; }
 .surface-controls { display: grid; gap: .85rem; }
 .surface-controls label { display: grid; gap: .35rem; }
-.surface-controls select, .surface-controls input, .surface-controls button, #surface-dismiss { min-height: 2.75rem; font: inherit; }
-.surface-controls select, .surface-controls button, #surface-dismiss { padding: .45rem .65rem; }
+.surface-controls select, .surface-controls input, .surface-controls button, #surface-dismiss, #surface-collapse { min-height: 2.75rem; font: inherit; }
+.surface-controls select, .surface-controls button, #surface-dismiss, #surface-collapse { padding: .45rem .65rem; }
 .surface-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 .surface-actions button { flex: 1 1 7rem; }
 #action-status { display: block; min-height: 1.5em; line-height: 1.4; }

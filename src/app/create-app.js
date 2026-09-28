@@ -131,10 +131,19 @@ export function createApp({ worldMount, diagnostics }) {
   lights.syncAll();
 
   let lastFrame = performance.now();
+  let fpsWindowStart = lastFrame;
+  let fpsFrames = 0;
+  const fpsCounter = document.querySelector("#fps-counter");
   let frameHandle = null;
   function render(time = performance.now()) {
     const dt = Math.min(0.05, Math.max(0, (time - lastFrame) / 1000));
     lastFrame = time;
+    fpsFrames += 1;
+    if (time - fpsWindowStart >= 500) {
+      if (fpsCounter) fpsCounter.textContent = `fps ${Math.round(fpsFrames * 1000 / (time - fpsWindowStart))}`;
+      fpsWindowStart = time;
+      fpsFrames = 0;
+    }
     production.update(time);
     collection.update(dt);
 

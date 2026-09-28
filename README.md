@@ -27,7 +27,10 @@ The first apparatus should be small enough that accessibility pressure can shape
 - `SEMANTIC_SURFACE.md` — present-tense truths that currently deserve to constrain work.
 - `research/` — observations, hypotheses, prior evidence, and questions worth preserving without granting them authority.
 - `changes/` — bounded implementation expeditions once implementation begins: intended uncertainty, evidence sought, actual outcome, and any resulting promotions.
-- executable artifacts — primary behavioral evidence once they exist.
+- `src/` — inspectable implementation source used for ordinary construction work.
+- candidate builds — web-addressable executable evidence assembled by GitHub from exact source commits.
+- root `index.html` — stable promoted executable; accepted candidate bytes, not the editing surface.
+- `BUILD.md` — build, candidate, experience, and promotion contract.
 - Git history — exact implementation and semantic lineage.
 
 Research notes are non-authoritative. Their presence does not require implementation.
@@ -44,6 +47,8 @@ Source projects remain sovereign over what they learned. Accessibility may link 
 
 ## Current state
 
-There is deliberately no executable yet.
+The repository now has a deliberately minimal executable and a source-first build spine.
 
-The immediate goal is to preserve the small number of accessibility commitments already earned and leave enough negative space for the first probe to discover the apparatus rather than merely instantiate a design we chose in advance.
+Ordinary work happens in modular source. GitHub assembles source changes into candidates without changing the stable root `index.html`. Accepted candidates can be promoted byte-for-byte without requiring a human to handle executable files.
+
+The implementation itself remains intentionally sparse. The next work should spend this machinery on an accessibility question rather than prematurely filling the apparatus.

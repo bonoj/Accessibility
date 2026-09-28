@@ -105,11 +105,21 @@ The interaction probes also earned two small presentation constraints. A gesture
 
 These results do not require every entity to have a permanently realized DOM tree, nor do they establish a desktop, window manager, persistent surface ordering, or universal entity UI. The adaptive surface is useful machinery that can now recede while construction continues.
 
-### Source and executable are dual surfaces
+### Conversation, source, and executable are distinct construction surfaces
 
-Accessibility keeps inspectable source code and a continuously usable executable as distinct but connected surfaces.
+The observed construction loop now deserves a sharper separation of roles.
 
-Source is the ordinary construction surface. Root `index.html` on `main` is the stable promoted executable surface.
+For the human, conversation with a capable model can be the ordinary authoring surface: express intent, describe incomplete ideas, report experienced behavior, make consequential judgments, and ask for changes without personally operating source code or conventional IDE machinery.
+
+Inspectable source is the model-facing implementation surface and durable technical substrate. Git preserves its lineage. Repository automation turns exact source commits into executable candidates.
+
+The runtime is the concrete thing being authored and experienced. Root `index.html` on `main` is the stable promoted executable surface.
+
+The working flow is therefore approximately:
+
+**human ↔ conversation/model → source/Git → build and publication machinery → executable runtime → human experience → conversation/model**
+
+This is an observed architecture of the current workflow, not a requirement that model inference live inside the runtime. The runtime does not need an embedded chat interface, speech stack, model client, agent loop, or model provider merely because construction is model-mediated. Runtime inference remains an independent capability to add only when the thing being built earns it.
 
 Build candidates are assembled from source by repository infrastructure, experienced before acceptance, and promoted as the exact bytes that were accepted. Humans should not need to download, locate, shuttle, or re-upload executable files as part of ordinary construction.
 

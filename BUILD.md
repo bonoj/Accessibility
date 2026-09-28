@@ -13,10 +13,9 @@ Source and build-tool changes on `main` trigger the **Build candidate** GitHub A
 
 The build runs from a clean checkout and emits a single self-contained HTML artifact.
 
-Each successful build preserves the same candidate in two forms:
+Each successful build preserves an immutable GitHub Actions artifact identified by the exact source commit and content digest.
 
-- an immutable GitHub Actions artifact for build provenance;
-- `candidates/<source-commit>/index.html` for direct web experience when GitHub Pages is enabled.
+Candidate generation never commits generated output back to `main`. The source/stable branch therefore cannot race its own build machinery.
 
 The root `index.html` is not changed by candidate creation. A rejected candidate therefore cannot replace the stable published executable.
 
@@ -33,11 +32,9 @@ Local building is useful for engineering but is not required for the human const
 
 A candidate is identified by the exact source commit from which it was built.
 
-With GitHub Pages serving `main`, the candidate can be opened directly at:
+Human preview publication is deliberately separate from candidate provenance. A preview surface may expose the current candidate as an ordinary web page, but it must not write generated candidate files into the source/stable branch.
 
-`/candidates/<source-commit>/`
-
-This makes candidate experience a web operation rather than a file-transfer operation. Phone use does not require downloading, locating, renaming, or re-uploading an HTML file.
+This keeps phone experience a web operation rather than a file-transfer operation without making build output part of ordinary source history.
 
 ## Promotion
 

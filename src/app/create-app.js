@@ -117,6 +117,11 @@ export function createApp({ worldMount, diagnostics }) {
   const cubeInventory = world.add(cube, components.Inventory, { accepts: "ring-matter", count: 0, capacity: Infinity });
   // Cube is outside the tilted Saturn group, so express its center in ring-local
   // coordinates once. The ring field can then surrender nearby matter directly.
+  // RenderSync has not yet projected the witness Transform onto the Three group
+  // here, so saturn.worldToLocal() would invert only the tilt and silently omit
+  // Jupurn's +Y translation. Compose the semantic transform before converting.
+  saturn.position.copy(components.Transform.get(witness).position);
+  saturn.updateWorldMatrix(true, false);
   const cubeWorldPosition = components.Transform.get(cube).position.clone();
   const cubeLocalPosition = saturn.worldToLocal(cubeWorldPosition.clone());
   ringField.addCollector({

@@ -9,15 +9,28 @@
 </head>
 <body>
   <main id="app" data-allocation="shared">
-    <section id="world" aria-label="Construction world"></section>
+    <section id="world" aria-label="Construction world. Drag to orbit. Pinch or use the mouse wheel to change distance."></section>
     <section id="language" aria-label="Language and accessible presentation">
       <p class="eyebrow">ACCESSIBILITY · CAMERA WITNESS</p>
-      <h1>Cameras are entities.</h1>
-      <p>The 3D view is a realization of ECS state. Change cameras or presentation allocation; semantic camera state survives.</p>
+      <h1>Camera behavior composes.</h1>
+      <p>Each camera is an ECS entity. Orbit is optional behavior attached to it, not a renderer feature.</p>
 
       <div class="controls">
         <label for="camera-select">Active camera</label>
         <select id="camera-select"></select>
+
+        <fieldset>
+          <legend>Orbit active camera</legend>
+          <div class="orbit-grid">
+            <button type="button" data-orbit="up">Up</button>
+            <button type="button" data-orbit="left">Left</button>
+            <button type="button" data-orbit="right">Right</button>
+            <button type="button" data-orbit="down">Down</button>
+            <button type="button" data-orbit="near">Nearer</button>
+            <button type="button" data-orbit="far">Farther</button>
+          </div>
+          <p class="hint">You can also drag the 3D surface to orbit and pinch or wheel to change distance.</p>
+        </fieldset>
 
         <label for="allocation">Presentation allocation</label>
         <select id="allocation">

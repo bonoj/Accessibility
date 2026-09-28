@@ -1,8 +1,8 @@
-export function installOrbitInput({ element, activeCamera, orbit, render, onChange }) {
+export function installOrbitInput({ element, activeCamera, orbit, onChange }) {
   const pointers = new Map();
   let pinchDistance = null;
 
-  function notify() { render(); onChange?.(); }
+  function notify() { onChange?.(); }
   function orbitBy(dx, dy) {
     const id = activeCamera();
     if (id != null && orbit.adjust(id, { azimuth: -dx * 0.006, polar: -dy * 0.006 })) notify();

@@ -14,6 +14,7 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
 
   element.addEventListener("pointerdown", event => {
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    element.setPointerCapture?.(event.pointerId);
   });
 
   element.addEventListener("pointermove", event => {
@@ -23,10 +24,7 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
     pointers.set(event.pointerId, next);
 
     if (pointers.size === 1) {
-      const dx = next.x - previous.x;
-      const dy = next.y - previous.y;
-      // Native vertical page/browser gestures win. A clearly horizontal gesture is spatial intent.
-      if (Math.abs(dx) > Math.abs(dy) * 1.15) orbitBy(dx, 0);
+      orbitBy(next.x - previous.x, next.y - previous.y);
       return;
     }
 
@@ -46,7 +44,6 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
   element.addEventListener("pointercancel", release);
 
   element.addEventListener("wheel", event => {
-    if (!(event.ctrlKey || event.metaKey)) return;
     event.preventDefault();
     zoomBy(event.deltaY * 0.006);
   }, { passive: false });

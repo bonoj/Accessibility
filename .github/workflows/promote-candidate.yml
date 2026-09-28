@@ -1,0 +1,47 @@
+name: Promote candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: "40-character source commit SHA of the accepted candidate"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Validate candidate
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+        run: |
+          [[ "$CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
+          test -s "candidates/$CANDIDATE/index.html"
+          test "$(cat "candidates/$CANDIDATE/SOURCE_COMMIT")" = "$CANDIDATE"
+
+      - name: Promote exact candidate bytes
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+        run: |
+          cp "candidates/$CANDIDATE/index.html" index.html
+          cmp --silent "candidates/$CANDIDATE/index.html" index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Candidate is already the stable index."
+            exit 0
+          fi
+          git commit -m "Promote candidate $CANDIDATE"
+          git pull --rebase origin main
+          git push origin HEAD:main

@@ -27,21 +27,28 @@ export function installInspection({ app, root }) {
     render: app.render
   });
 
-  function hitWitness(x, y) {
+  function hitSurfaceEntity(x, y) {
     const rect = canvas.getBoundingClientRect();
     pointer.set(((x - rect.left) / rect.width) * 2 - 1, -((y - rect.top) / rect.height) * 2 + 1);
     const cameraId = app.systems.cameras.activeId();
     const camera = cameraId == null ? null : app.components.CameraView.get(cameraId)?.camera;
-    const object = app.components.RenderObject.get(app.entities.witness)?.object;
-    if (!camera || !object) return false;
+    if (!camera) return null;
+    const candidates = [app.entities.witness, app.entities.cube]
+      .map(entity => ({ entity, object: app.components.RenderObject.get(entity)?.object }))
+      .filter(candidate => candidate.object);
     raycaster.setFromCamera(pointer, camera);
-    return raycaster.intersectObject(object, false).length > 0;
+    const hits = raycaster.intersectObjects(candidates.map(candidate => candidate.object), false);
+    if (!hits.length) return null;
+    return candidates.find(candidate => candidate.object === hits[0].object)?.entity ?? null;
   }
 
   quantity?.addEventListener("change", () => surface.patch({ textQuantity: quantity.value }));
   fontSize?.addEventListener("change", () => surface.patch({ fontSize: fontSize.value }));
   slider?.addEventListener("input", () => surface.patch({ amount: Number(slider.value) }));
-  action?.addEventListener("click", () => surface.patch({ actionStatus: "The ball noticed. The control works." }));
+  action?.addEventListener("click", () => {
+    const name = surface.definition.title.toLowerCase();
+    surface.patch({ actionStatus: `The ${name} noticed. The control works.` });
+  });
   expand?.addEventListener("click", () => surface.toggleExpanded());
   collapse?.addEventListener("click", () => surface.toggleCollapsed());
   dismiss?.addEventListener("click", () => surface.dismiss());
@@ -85,8 +92,9 @@ export function installInspection({ app, root }) {
     starts.delete(event.pointerId);
     if (!start) return;
     const travel = Math.hypot(event.clientX - start.x, event.clientY - start.y);
-    if (travel < 10 && performance.now() - start.t < 420 && hitWitness(event.clientX, event.clientY)) {
-      surface.openAt(event.clientX, event.clientY);
+    if (travel < 10 && performance.now() - start.t < 420) {
+      const entity = hitSurfaceEntity(event.clientX, event.clientY);
+      if (entity != null) surface.openAt(event.clientX, event.clientY, entity);
     }
   });
 

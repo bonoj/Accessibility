@@ -52,6 +52,30 @@ This suggests two provisional directions:
 
 These are observations from one probe, not a completed interaction grammar.
 
+## Infrastructure complexity can move away from the human
+
+The publication work produced a second kind of executable evidence.
+
+During one phone-mediated session, the repository moved from manual artifact transport toward a source-driven deployment path with clean candidate builds, immutable build artifacts, a continuously available phone preview, exact-byte promotion, and stable Pages publication.
+
+Several failures occurred while assembling that path. Diagnosing them required reasoning across specialized implementation details including workflow event semantics, workflow-token trigger behavior, cross-workflow artifact scope, immutable artifact identity, Pages assembly, and deployment artifacts. The human did not need to learn or directly operate those mechanisms in order to continue the investigation. The consequential human observations remained ordinary statements such as:
+
+- the preview behaves correctly;
+- promote what I am looking at;
+- the root site has not changed yet.
+
+The model could then inspect execution evidence, isolate the failing layer, make a bounded source or workflow change, persist the repair, and try again.
+
+This does not demonstrate that operational expertise is unnecessary, nor that models can reliably replace specialist infrastructure work. It does provide concrete evidence for a narrower proposition:
+
+> **Model-mediated construction allowed infrastructure complexity to increase while the prerequisite operational vocabulary demanded of the human decreased.**
+
+The sophistication of the resulting machinery did not require a corresponding increase in the sophistication of the human-facing controls. In this case, additional machinery was useful precisely because it removed artifact transport, commit identifiers, build mechanics, and deployment details from the ordinary human loop.
+
+This suggests a useful distinction for Accessibility: complexity itself is not necessarily the barrier. Requiring the person to personally carry that complexity may be.
+
+The session also reinforced the value of persistent small cuts. Each diagnosed failure could be converted into repository machinery and documentation so that future work inherits the result rather than depending on either participant remembering the debugging session. Git and CI therefore served not only as software-production infrastructure but as durable context for continued human–model construction.
+
 ## Question now
 
 The immediate question is no longer merely whether an accessible interface can operate a sophisticated construction system.

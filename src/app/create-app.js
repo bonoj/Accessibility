@@ -167,7 +167,6 @@ export function createApp({ worldMount, diagnostics }) {
     requestAnimationFrame(frame);
   }
 
-  draw();
   requestAnimationFrame(frame);
 
   return {
@@ -177,7 +176,6 @@ export function createApp({ worldMount, diagnostics }) {
     three,
     systems: { renderSync, cameras, orbit, lights, surfaces, production, collection },
     entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
-    render: draw,
     inspect: () => ({
       entities: world.alive.size,
       build: globalThis.__ACCESSIBILITY_BUILD__,

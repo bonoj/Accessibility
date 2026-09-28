@@ -111,6 +111,8 @@ Build candidates are assembled from source by repository infrastructure, experie
 
 This boundary is itself subject to accessibility pressure: implementation machinery may be complex internally while the consequential human operations remain shaping and accepting behavior.
 
+Executable publication work has now strengthened that direction. Infrastructure complexity does not need to be eliminated merely to lower the human entry barrier. It may instead be carried by the substrate and model-mediated workflow while the person retains consequential judgment. Increasing internal sophistication should not automatically increase the prerequisite operational vocabulary demanded of the human.
+
 ### Executable evidence earns architecture
 
 Do not prematurely decide that the correct apparatus is Foundry, a node graph, a canvas, a conversational agent, a voice interface, or any other favored mechanism merely because it is familiar.

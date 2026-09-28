@@ -12,7 +12,9 @@ A useful shorthand is:
 
 > **Low floor without a low ceiling.**
 
-Accessibility is treated here as a property of the construction substrate, not as a special mode for a designated class of user.
+The current work sharpens that into a second constraint: lower the barrier to beginning while widening support for people to build tools the original apparatus did not anticipate.
+
+Accessibility is treated here as a property of the construction substrate, not as a special mode for a designated class of user. Navigable 3D worlds are an important capability and experimental pressure, not a required construction medium.
 
 ## Method
 
@@ -51,4 +53,6 @@ The repository now has a deliberately minimal executable and a source-first buil
 
 Ordinary work happens in modular source. GitHub assembles source changes into candidates without changing the stable root `index.html`. Accepted candidates can be promoted byte-for-byte without requiring a human to handle executable files.
 
-The implementation itself remains intentionally sparse. The next work should spend this machinery on an accessibility question rather than prematurely filling the apparatus.
+The implementation itself remains intentionally sparse. The current scene and summoned card are probes rather than a product shell.
+
+The next work should investigate forgiving access to capability and progressively extensible construction: how little apparatus must a person personally operate before they can begin making the apparatus more useful for what they are trying to build?

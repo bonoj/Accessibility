@@ -1,26 +1,17 @@
 import { installOrbitInput } from "../runtime/orbit-input.js";
 
-const COPY = {
-  short: "A simple object in the scene.",
-  medium: "A simple object in the scene. It has a stable identity even when the way you inspect or operate it changes. This surface is temporary tooling attached to that same underlying thing.",
-  lots: "A simple object in the scene. It has a stable identity even when the way you inspect or operate it changes. This surface is temporary tooling attached to that same underlying thing. The extra text exists to put pressure on reading, reflow, scrolling, control discovery, and recovery rather than to explain the ball. As the amount of language grows, the surface is allowed to claim more room instead of forcing the world and the text to compete for the same pixels. If the text becomes very large, ordinary web layout should continue doing useful work. Controls should remain reachable, state should remain intact, and the Three.js world may continue running behind a surface that temporarily occupies the entire view. Dismissing or shrinking the surface should reveal the world without requiring the spatial scene to reconstruct itself."
-};
-
 export function installInspection({ app, root }) {
   const world = root.querySelector("#world");
   const card = document.querySelector("#entity-card");
-  const body = document.querySelector("#surface-body");
-  const description = document.querySelector("#entity-description");
   const quantity = document.querySelector("#text-quantity");
   const fontSize = document.querySelector("#font-size");
   const slider = document.querySelector("#amount-slider");
-  const amountValue = document.querySelector("#amount-value");
   const action = document.querySelector("#ball-action");
-  const status = document.querySelector("#action-status");
   const expand = document.querySelector("#surface-expand");
   const collapse = document.querySelector("#surface-collapse");
   const dismiss = document.querySelector("#surface-dismiss");
   const variant = document.querySelector("#surface-variant");
+  const surface = app.systems.surfaces;
   const canvas = app.three.renderer.domElement;
   const raycaster = new app.three.THREE.Raycaster();
   const pointer = new app.three.THREE.Vector2();
@@ -28,8 +19,6 @@ export function installInspection({ app, root }) {
   const surfacePointers = new Map();
   let pinchStartDistance = 0;
   let pinchStartScale = 1;
-  let surfaceScale = 1;
-  let anchor = { x: innerWidth / 2, y: innerHeight / 2 };
 
   installOrbitInput({
     element: world,
@@ -49,92 +38,23 @@ export function installInspection({ app, root }) {
     return raycaster.intersectObject(object, false).length > 0;
   }
 
-  function placeCard() {
-    if (!card || card.hidden || card.dataset.expanded === "true") return;
-    card.style.transform = "";
-    if ((variant?.value || "float") !== "float") return;
-    const margin = 12;
-    const rect = card.getBoundingClientRect();
-    card.style.left = Math.max(margin, Math.min(innerWidth - rect.width - margin, anchor.x + 18)) + "px";
-    card.style.top = Math.max(margin, Math.min(innerHeight - rect.height - margin, anchor.y - rect.height / 2)) + "px";
-  }
-
-  function showCard(x, y) {
-    if (!card) return;
-    anchor = { x, y };
-    card.hidden = false;
-    requestAnimationFrame(placeCard);
-  }
-
-  function resetSurfaceZoom() {
-    surfaceScale = 1;
-    pinchStartScale = 1;
-    pinchStartDistance = 0;
-    surfacePointers.clear();
-    card?.style.setProperty("--pinch-scale", "1");
-  }
-
-  function setExpanded(next) {
-    if (!card) return;
-    card.dataset.expanded = String(next);
-    expand?.setAttribute("aria-pressed", String(next));
-    if (expand) expand.textContent = next ? "Shrink" : "Expand";
-    if (!next) requestAnimationFrame(placeCard);
-  }
-
-  quantity?.addEventListener("change", () => {
-    if (description) description.textContent = COPY[quantity.value] || COPY.short;
-    requestAnimationFrame(placeCard);
-  });
-
-  fontSize?.addEventListener("change", () => {
-    if (card) card.dataset.size = fontSize.value;
-    requestAnimationFrame(placeCard);
-  });
-
-  slider?.addEventListener("input", () => {
-    if (amountValue) amountValue.value = slider.value;
-  });
-
-  action?.addEventListener("click", () => {
-    if (status) status.value = "The ball noticed. The control works.";
-  });
-
-  expand?.addEventListener("click", () => setExpanded(card?.dataset.expanded !== "true"));
-
-  collapse?.addEventListener("click", () => {
-    if (!body) return;
-    const collapsing = !body.hidden;
-    if (collapsing) resetSurfaceZoom();
-    body.hidden = collapsing;
-    collapse.setAttribute("aria-expanded", String(!body.hidden));
-    collapse.textContent = body.hidden ? "Expand content" : "Collapse";
-    requestAnimationFrame(placeCard);
-  });
-
-  dismiss?.addEventListener("click", () => {
-    resetSurfaceZoom();
-    if (card) card.hidden = true;
-  });
-
-  variant?.addEventListener("change", () => {
-    if (!card) return;
-    card.dataset.variant = variant.value;
-    requestAnimationFrame(placeCard);
-  });
+  quantity?.addEventListener("change", () => surface.patch({ textQuantity: quantity.value }));
+  fontSize?.addEventListener("change", () => surface.patch({ fontSize: fontSize.value }));
+  slider?.addEventListener("input", () => surface.patch({ amount: Number(slider.value) }));
+  action?.addEventListener("click", () => surface.patch({ actionStatus: "The ball noticed. The control works." }));
+  expand?.addEventListener("click", () => surface.toggleExpanded());
+  collapse?.addEventListener("click", () => surface.toggleCollapsed());
+  dismiss?.addEventListener("click", () => surface.dismiss());
+  variant?.addEventListener("change", () => surface.patch({ variant: variant.value }));
 
   if (card) {
-    card.dataset.variant = variant?.value || "float";
-    card.dataset.size = fontSize?.value || "normal";
-    card.dataset.expanded = "false";
-
     card.addEventListener("pointerdown", event => {
       if (event.pointerType !== "touch") return;
       surfacePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (surfacePointers.size === 2) {
         const [a, b] = [...surfacePointers.values()];
         pinchStartDistance = Math.hypot(a.x - b.x, a.y - b.y);
-        pinchStartScale = surfaceScale;
+        pinchStartScale = surface.state.pinchScale;
       }
     });
 
@@ -144,16 +64,16 @@ export function installInspection({ app, root }) {
       if (surfacePointers.size !== 2 || pinchStartDistance <= 0) return;
       const [a, b] = [...surfacePointers.values()];
       const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      surfaceScale = Math.max(0.8, Math.min(3, pinchStartScale * distance / pinchStartDistance));
-      card.style.setProperty("--pinch-scale", String(surfaceScale));
+      const pinchScale = Math.max(0.8, Math.min(3, pinchStartScale * distance / pinchStartDistance));
+      surface.patch({ pinchScale });
     });
 
-    const releaseSurfacePointer = event => {
+    const release = event => {
       surfacePointers.delete(event.pointerId);
       if (surfacePointers.size < 2) pinchStartDistance = 0;
     };
-    card.addEventListener("pointerup", releaseSurfacePointer);
-    card.addEventListener("pointercancel", releaseSurfacePointer);
+    card.addEventListener("pointerup", release);
+    card.addEventListener("pointercancel", release);
   }
 
   world.addEventListener("pointerdown", event => {
@@ -166,10 +86,9 @@ export function installInspection({ app, root }) {
     if (!start) return;
     const travel = Math.hypot(event.clientX - start.x, event.clientY - start.y);
     if (travel < 10 && performance.now() - start.t < 420 && hitWitness(event.clientX, event.clientY)) {
-      showCard(event.clientX, event.clientY);
+      surface.openAt(event.clientX, event.clientY);
     }
   });
 
   world.addEventListener("pointercancel", event => starts.delete(event.pointerId));
-  addEventListener("resize", placeCard);
 }

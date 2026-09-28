@@ -12,15 +12,21 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: accessibility-candidate-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: Checkout source commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Node
         uses: actions/setup-node@v4
@@ -38,10 +44,24 @@ jobs:
           test -s dist/index.html
           ! grep -E '<(script|link)[^>]+(src|href)=' dist/index.html
 
-      - name: Upload candidate
+      - name: Upload immutable workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: accessibility-candidate-${{ github.sha }}
           path: dist/index.html
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish web-addressable candidate
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p "candidates/$SOURCE_SHA"
+          cp dist/index.html "candidates/$SOURCE_SHA/index.html"
+          printf '%s\n' "$SOURCE_SHA" > "candidates/$SOURCE_SHA/SOURCE_COMMIT"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "candidates/$SOURCE_SHA"
+          git commit -m "Build candidate $SOURCE_SHA"
+          git pull --rebase origin main
+          git push origin HEAD:main

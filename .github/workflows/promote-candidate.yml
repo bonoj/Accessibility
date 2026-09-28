@@ -61,11 +61,14 @@ jobs:
             core.setOutput("id", artifact.id);
 
       - name: Download exact candidate
-        uses: actions/download-artifact@v4
-        with:
-          artifact-ids: ${{ steps.artifact.outputs.id }}
-          path: accepted
-          github-token: ${{ github.token }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.artifact.outputs.id }}
+        run: |
+          mkdir -p accepted
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" > candidate.zip
+          unzip -q candidate.zip -d accepted
+          test -s accepted/index.html
 
       - name: Promote exact bytes
         env:

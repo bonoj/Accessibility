@@ -4,10 +4,6 @@ export function createThreeRuntime({ mount, diagnostics }) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf1f0eb);
 
-  const camera = new THREE.PerspectiveCamera(48, 1, 0.03, 1000);
-  camera.position.set(0, 2.4, 5.5);
-  camera.lookAt(0, 0, 0);
-
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     powerPreference: "high-performance"
@@ -38,11 +34,11 @@ export function createThreeRuntime({ mount, diagnostics }) {
     );
   };
 
+  let width = 1;
+  let height = 1;
   function resize() {
-    const width = Math.max(1, mount.clientWidth);
-    const height = Math.max(1, mount.clientHeight);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
+    width = Math.max(1, mount.clientWidth);
+    height = Math.max(1, mount.clientHeight);
     renderer.setSize(width, height, false);
   }
 
@@ -53,9 +49,9 @@ export function createThreeRuntime({ mount, diagnostics }) {
   return {
     THREE,
     scene,
-    camera,
     renderer,
-    render: () => renderer.render(scene, camera),
+    size: () => ({ width, height }),
+    render: camera => renderer.render(scene, camera),
     dispose() {
       observer.disconnect();
       renderer.dispose();

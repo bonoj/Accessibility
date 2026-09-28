@@ -28,6 +28,9 @@ export function createOrbitSystem({ world, components, THREE }) {
       orbit.distance * sinPolar * Math.cos(orbit.azimuth)
     );
     transform.position.copy(target.position).add(offset);
+    if (orbit.minWorldY != null && transform.position.y < orbit.minWorldY) {
+      transform.position.y = orbit.minWorldY;
+    }
     return true;
   }
 
@@ -53,6 +56,7 @@ export function createOrbitSystem({ world, components, THREE }) {
       distance: Number(orbit.distance.toFixed(2)),
       limits: {
         distance: [orbit.minDistance, orbit.maxDistance],
+        minWorldY: orbit.minWorldY ?? null,
         polarDegrees: [
           Number((orbit.minPolar * 180 / Math.PI).toFixed(1)),
           Number((orbit.maxPolar * 180 / Math.PI).toFixed(1))

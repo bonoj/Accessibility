@@ -53,7 +53,7 @@ export function createApp({ worldMount, diagnostics }) {
     return id;
   }
 
-  const commonLimits = { minDistance: 1.5, maxDistance: 12, minPolar: 0.15, maxPolar: Math.PI - 0.15 };
+  const commonLimits = { minDistance: 1.5, maxDistance: 12, minPolar: 0.15, maxPolar: Math.PI - 0.15, minWorldY: 0.18 };
   const overviewCamera = addCamera({
     name: "Overview",
     position: [0, 2.4, 5.5],

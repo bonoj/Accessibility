@@ -33,35 +33,35 @@ fieldset { margin: .35rem 0; padding: 1rem; border: 1px solid color-mix(in srgb,
 legend { padding: 0 .35rem; font-weight: 700; }
 .orbit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .hint { margin: .8rem 0 0; font-size: .9rem; opacity: .75; }
-#world { touch-action: none; }
+#world { touch-action: pan-y pinch-zoom; }
 
-/* On narrow screens language is a recoverable presentation surface, not a competing page. */
+/* Mobile language surface: content may move; its recovery affordance cannot. */
+#language-handle { display: none; }
 @media (max-width: 51.999rem) {
-  body { overflow: hidden; }
-  #app { position: relative; display: block; height: 100dvh; min-height: 0; }
-  #world { height: 100%; min-height: 0; }
+  #app { position: relative; display: block; min-height: 100dvh; }
+  #world { height: 100dvh; min-height: 22rem; }
   #language {
-    position: absolute; z-index: 20; inset: auto 0 0;
-    max-height: min(72dvh, 44rem); overflow: auto;
-    padding: 0 clamp(1rem, 5vw, 2rem) max(1rem, env(safe-area-inset-bottom));
+    position: fixed; z-index: 20; left: 0; right: 0; bottom: calc(3.5rem + env(safe-area-inset-bottom));
+    max-height: min(68dvh, 44rem); overflow: auto;
+    padding: clamp(1rem, 5vw, 2rem);
     background: Canvas;
     border-top: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
-    transition: max-height 180ms ease;
+    transition: transform 180ms ease;
   }
-  #language-content { padding-top: .4rem; }
   #language-handle {
-    position: sticky; top: 0; z-index: 2;
-    width: 100%; min-height: 4rem; margin: 0; padding: .5rem;
-    display: grid; place-items: center; gap: .25rem;
-    border: 0; border-radius: 0; background: Canvas;
-    touch-action: none;
+    display: flex; position: fixed; z-index: 30;
+    left: 0; right: 0; bottom: 0;
+    width: 100%; min-height: calc(3.5rem + env(safe-area-inset-bottom));
+    padding: .4rem .9rem max(.4rem, env(safe-area-inset-bottom));
+    align-items: center; justify-content: center; gap: .65rem;
+    border: 0; border-top: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+    border-radius: 0; background: Canvas;
+    touch-action: pan-x;
   }
-  .handle-mark { display: block; width: min(7rem, 32vw); height: .35rem; border-radius: 999px; background: currentColor; opacity: .42; }
+  .handle-mark { flex: 0 0 auto; width: 2.25rem; height: .22rem; border-radius: 999px; background: currentColor; opacity: .38; }
   .handle-label { font-weight: 750; }
-  #app[data-sheet="collapsed"] #language { max-height: 4rem; overflow: hidden; }
-  #app[data-sheet="collapsed"] #language-content { visibility: hidden; }
-  #app[data-sheet="collapsed"] #language-handle { position: relative; }
-  #app[data-allocation="language"] #language { max-height: 90dvh; }
+  #app[data-sheet="collapsed"] #language { transform: translateY(calc(100% + 4rem)); pointer-events: none; }
+  #app[data-allocation="language"] #language { max-height: 88dvh; }
 }
 @media (prefers-reduced-motion: reduce) {
   #language { transition: none !important; }

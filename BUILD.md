@@ -53,6 +53,10 @@ The **Promote candidate** workflow validates that candidate, copies its existing
 
 Promotion does **not** rebuild.
 
+After the exact candidate bytes are committed to root `index.html`, the promotion workflow explicitly dispatches a **fresh** `Publish Pages` workflow run and passes the promoted candidate identity so the stable root and preview are assembled together. This explicit dispatch is required because a push performed with a workflow's `GITHUB_TOKEN` does not reliably trigger a second workflow from that push.
+
+Do not use **Re-run jobs** on an already completed Pages publication as the normal publication path. `actions/upload-pages-artifact` can leave another `github-pages` artifact on the same workflow run attempt; `actions/deploy-pages` then sees multiple artifacts with the same name and refuses to choose between them. Publication after promotion must be a fresh Pages workflow run.
+
 Candidate artifacts are created by the separate **Build candidate** workflow. Artifact discovery may be repository-wide, but `actions/download-artifact` normally resolves artifacts in the current workflow run. Promotion therefore downloads the already-resolved immutable artifact ID through GitHub's Actions artifact API. This cross-workflow boundary is intentional: do not replace it with a current-run artifact download unless the workflow architecture itself changes.
 
 Before allowing promotion to write stable output, the transport seam may be tested independently: resolve a known candidate artifact, download it by immutable artifact ID, unpack it, verify the embedded candidate SHA, and compare its digest without copying it to root `index.html` or committing anything.

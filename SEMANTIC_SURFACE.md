@@ -73,6 +73,16 @@ ECS is therefore an implementation hypothesis chosen for the accessibility probl
 
 Its usefulness must still be tested through executable evidence. If it fails to preserve that separation or creates greater barriers than it removes, the architecture may change.
 
+### Source and executable are dual surfaces
+
+Accessibility keeps inspectable source code and a continuously usable executable as distinct but connected surfaces.
+
+Source is the ordinary construction surface. Root `index.html` on `main` is the stable promoted executable surface.
+
+Build candidates are assembled from source by repository infrastructure, experienced before acceptance, and promoted as the exact bytes that were accepted. Humans should not need to download, locate, shuttle, or re-upload executable files as part of ordinary construction.
+
+This boundary is itself subject to accessibility pressure: implementation machinery may be complex internally while the consequential human operations remain shaping and accepting behavior.
+
 ### Executable evidence earns architecture
 
 Do not prematurely decide that the correct apparatus is Foundry, a node graph, a canvas, a conversational agent, a voice interface, or any other favored mechanism merely because it is familiar.
@@ -86,7 +96,7 @@ Build bounded probes. Observe use. Promote mechanisms and vocabulary when they p
 - `SEMANTIC_SURFACE.md` records current earned constraints.
 - `research/` preserves hypotheses and observations without making them requirements.
 - `changes/` will preserve bounded implementation expeditions and actual outcomes.
-- implementation will own realization details once implementation exists.
+- implementation owns realization details; modular source is the working surface and promoted `index.html` is the stable executable surface.
 - Git preserves exact lineage.
 
 A research note does not become authority through age or repetition.
@@ -112,6 +122,6 @@ There is currently no commitment to:
 
 ## Present finish line
 
-The repository is ready for its first executable expedition when we can state a small accessibility uncertainty that an extremely small construction apparatus could actually test.
+The repository now has the minimum build/promotion substrate needed for executable work. The next bounded expedition should use that substrate to test a small accessibility uncertainty rather than expand infrastructure for its own sake.
 
 Preserving negative space is preferable to filling the repository with speculative interface machinery.

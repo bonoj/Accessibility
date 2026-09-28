@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Accessibility — executable research into accessible human–model construction.">
   <title>Accessibility</title>
   <!-- ACCESSIBILITY:STYLE -->
 </head>
 <body>
-  <main id="app" aria-live="polite"></main>
+  <main id="app">
+    <section id="world" aria-label="Construction world"></section>
+    <section id="language" aria-label="Language and accessible presentation">
+      <p class="eyebrow">ACCESSIBILITY</p>
+      <h1>Construction starts here.</h1>
+      <p>The apparatus is intentionally almost empty.</p>
+      <p class="build">build {{BUILD_COMMIT}}</p>
+    </section>
+  </main>
   <div id="diagnostics" role="alert" hidden></div>
   <script>globalThis.__ACCESSIBILITY_BUILD__ = "{{BUILD_COMMIT}}";</script>
   <!-- ACCESSIBILITY:SCRIPT -->

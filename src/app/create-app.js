@@ -7,7 +7,6 @@ import { createCameraSystem } from "../runtime/camera-system.js";
 import { createOrbitSystem } from "../runtime/orbit-system.js";
 import { createLightSystem } from "../runtime/light-system.js";
 import { createSurfaceSystem } from "../runtime/surface-system.js";
-import { createProductionSystem } from "../runtime/production-system.js";
 import { createCollectionSystem } from "../runtime/collection-system.js";
 import { createOrbitalSystem } from "../runtime/orbital-system.js";
 import { createRingFieldSystem } from "../runtime/ring-field-system.js";
@@ -52,8 +51,6 @@ export function createApp({ worldMount, diagnostics }) {
   const probe = adaptiveEntitySurfaceProbe.witness;
   world.add(witness, components.Surface, structuredClone(probe.surface));
   world.add(witness, components.SurfaceState, structuredClone(probe.surfaceState));
-  world.add(witness, components.Producer, { kind: "bearing", intervalMs: 2200, produced: 0, nextAt: null });
-
   const moonSpecs = [
     { radius: 3.35, size: 0.13, rate: 0.32, phase: 0.0 },
     { radius: 3.85, size: 0.16, rate: 0.16, phase: 1.75 },
@@ -117,7 +114,16 @@ export function createApp({ worldMount, diagnostics }) {
     ...structuredClone(probe.surfaceState),
     actionStatus: "Nothing has happened yet."
   });
-  world.add(cube, components.Inventory, { accepts: "bearing", count: 0, capacity: 10 });
+  const cubeInventory = world.add(cube, components.Inventory, { accepts: "ring-matter", count: 0, capacity: Infinity });
+  // Cube is outside the tilted Saturn group, so express its center in ring-local
+  // coordinates once. The ring field can then surrender nearby matter directly.
+  const cubeWorldPosition = components.Transform.get(cube).position.clone();
+  const cubeLocalPosition = saturn.worldToLocal(cubeWorldPosition.clone());
+  ringField.addCollector({
+    localPosition: cubeLocalPosition,
+    radius: 0.72,
+    collect(amount) { cubeInventory.count += amount; }
+  });
 
   function addCamera({ name, projection = "perspective", position, orbit, fov = 48, height = 5 }) {
     const id = world.entity();
@@ -152,7 +158,6 @@ export function createApp({ worldMount, diagnostics }) {
   const cameras = createCameraSystem({ world, components, three });
   const lights = createLightSystem({ world, components, three });
   const surfaces = createSurfaceSystem({ components, entity: witness });
-  const production = createProductionSystem({ world, components, THREE: three.THREE, scene: three.scene });
   const collection = createCollectionSystem({ world, components, scene: three.scene });
   const orbital = createOrbitalSystem({ world, components });
   orbit.applyAll();
@@ -198,15 +203,13 @@ export function createApp({ worldMount, diagnostics }) {
 
     orbital.update(elapsed);
     ringField.update(dt, elapsed);
-    production.update(time);
     collection.update(dt);
 
-    const producer = components.Producer.get(witness);
     const inventory = components.Inventory.get(cube);
     const ballSurface = components.Surface.get(witness);
     const cubeSurface = components.Surface.get(cube);
-    if (producer && ballSurface) ballSurface.copy.short = `Saturn: 1,000 brass bearings in cleared ring bands, three moons in 4:2:1 orbital resonance, and ${producer.produced} loose brass balls produced.`;
-    if (inventory && cubeSurface) cubeSurface.copy.short = `A cube holding ${inventory.count} of ${inventory.capacity} small brass balls.`;
+    if (ballSurface) ballSurface.copy.short = `A living orbital field of 1,600 brass bearings, resonant moons, and local perturbations.`;
+    if (inventory && cubeSurface) cubeSurface.copy.short = `A cube that has stolen ${inventory.count} ring particles. It has no capacity limit.`;
     surfaces.refreshOpen();
 
     draw();
@@ -220,7 +223,7 @@ export function createApp({ worldMount, diagnostics }) {
     components,
     events,
     three,
-    systems: { renderSync, cameras, orbit, lights, surfaces, production, collection, orbital, ringField },
+    systems: { renderSync, cameras, orbit, lights, surfaces, collection, orbital, ringField },
     entities: { witness, cube, resonantMoons, clearingMoon, overviewCamera, sideCamera, skyLight, keyLight },
     inspect: () => ({
       entities: world.alive.size,
@@ -228,7 +231,6 @@ export function createApp({ worldMount, diagnostics }) {
       pixelRatio: three.renderer.getPixelRatio(),
       activeCamera: cameras.activeId(),
       behavior: {
-        producer: components.Producer.get(witness),
         inventory: components.Inventory.get(cube),
         looseCollectibles: world.query(components.Collectible).length
       },

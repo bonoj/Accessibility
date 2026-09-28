@@ -5,7 +5,7 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
   function notify() { render(); onChange?.(); }
   function orbitBy(dx, dy) {
     const id = activeCamera();
-    if (id != null && orbit.adjust(id, { azimuth: -dx * 0.008, polar: dy * 0.008 })) notify();
+    if (id != null && orbit.adjust(id, { azimuth: -dx * 0.006, polar: -dy * 0.006 })) notify();
   }
   function zoomBy(delta) {
     const id = activeCamera();
@@ -31,7 +31,14 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinchDistance != null) zoomBy((pinchDistance - distance) * 0.015);
+      if (pinchDistance != null) {
+        const id = activeCamera();
+        const state = id == null ? null : orbit.inspect(id);
+        if (state && distance > 0 && pinchDistance > 0) {
+          const nextDistance = state.distance * (pinchDistance / distance);
+          zoomBy(nextDistance - state.distance);
+        }
+      }
       pinchDistance = distance;
     }
   });
@@ -45,6 +52,8 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
 
   element.addEventListener("wheel", event => {
     event.preventDefault();
-    zoomBy(event.deltaY * 0.006);
+    const id = activeCamera();
+    const state = id == null ? null : orbit.inspect(id);
+    if (state) zoomBy(state.distance * (Math.exp(event.deltaY * 0.001) - 1));
   }, { passive: false });
 }

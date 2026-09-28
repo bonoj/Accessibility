@@ -25,6 +25,10 @@ export function installInspection({ app, root }) {
   const raycaster = new app.three.THREE.Raycaster();
   const pointer = new app.three.THREE.Vector2();
   const starts = new Map();
+  const surfacePointers = new Map();
+  let pinchStartDistance = 0;
+  let pinchStartScale = 1;
+  let surfaceScale = 1;
   let anchor = { x: innerWidth / 2, y: innerHeight / 2 };
 
   installOrbitInput({
@@ -62,6 +66,14 @@ export function installInspection({ app, root }) {
     requestAnimationFrame(placeCard);
   }
 
+  function resetSurfaceZoom() {
+    surfaceScale = 1;
+    pinchStartScale = 1;
+    pinchStartDistance = 0;
+    surfacePointers.clear();
+    card?.style.setProperty("--pinch-scale", "1");
+  }
+
   function setExpanded(next) {
     if (!card) return;
     card.dataset.expanded = String(next);
@@ -92,13 +104,16 @@ export function installInspection({ app, root }) {
 
   collapse?.addEventListener("click", () => {
     if (!body) return;
-    body.hidden = !body.hidden;
+    const collapsing = !body.hidden;
+    if (collapsing) resetSurfaceZoom();
+    body.hidden = collapsing;
     collapse.setAttribute("aria-expanded", String(!body.hidden));
     collapse.textContent = body.hidden ? "Expand content" : "Collapse";
     requestAnimationFrame(placeCard);
   });
 
   dismiss?.addEventListener("click", () => {
+    resetSurfaceZoom();
     if (card) card.hidden = true;
   });
 
@@ -112,6 +127,33 @@ export function installInspection({ app, root }) {
     card.dataset.variant = variant?.value || "float";
     card.dataset.size = fontSize?.value || "normal";
     card.dataset.expanded = "false";
+
+    card.addEventListener("pointerdown", event => {
+      if (event.pointerType !== "touch") return;
+      surfacePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (surfacePointers.size === 2) {
+        const [a, b] = [...surfacePointers.values()];
+        pinchStartDistance = Math.hypot(a.x - b.x, a.y - b.y);
+        pinchStartScale = surfaceScale;
+      }
+    });
+
+    card.addEventListener("pointermove", event => {
+      if (!surfacePointers.has(event.pointerId)) return;
+      surfacePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (surfacePointers.size !== 2 || pinchStartDistance <= 0) return;
+      const [a, b] = [...surfacePointers.values()];
+      const distance = Math.hypot(a.x - b.x, a.y - b.y);
+      surfaceScale = Math.max(0.8, Math.min(3, pinchStartScale * distance / pinchStartDistance));
+      card.style.setProperty("--pinch-scale", String(surfaceScale));
+    });
+
+    const releaseSurfacePointer = event => {
+      surfacePointers.delete(event.pointerId);
+      if (surfacePointers.size < 2) pinchStartDistance = 0;
+    };
+    card.addEventListener("pointerup", releaseSurfacePointer);
+    card.addEventListener("pointercancel", releaseSurfacePointer);
   }
 
   world.addEventListener("pointerdown", event => {

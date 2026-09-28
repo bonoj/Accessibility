@@ -8,12 +8,32 @@
   <!-- ACCESSIBILITY:STYLE -->
 </head>
 <body>
-  <main id="app">
+  <main id="app" data-allocation="shared">
     <section id="world" aria-label="Construction world"></section>
     <section id="language" aria-label="Language and accessible presentation">
-      <p class="eyebrow">ACCESSIBILITY</p>
-      <h1>Construction starts here.</h1>
-      <p>The apparatus is intentionally almost empty.</p>
+      <p class="eyebrow">ACCESSIBILITY · CAMERA WITNESS</p>
+      <h1>Cameras are entities.</h1>
+      <p>The 3D view is a realization of ECS state. Change cameras or presentation allocation; semantic camera state survives.</p>
+
+      <div class="controls">
+        <label for="camera-select">Active camera</label>
+        <select id="camera-select"></select>
+
+        <label for="allocation">Presentation allocation</label>
+        <select id="allocation">
+          <option value="world">3D foreground</option>
+          <option value="shared" selected>Shared</option>
+          <option value="language">Language foreground</option>
+        </select>
+
+        <button id="refresh-state" type="button">Refresh semantic state</button>
+      </div>
+
+      <details open>
+        <summary>Inspect ECS camera state</summary>
+        <pre id="camera-state" aria-live="polite"></pre>
+      </details>
+
       <p class="build">build {{BUILD_COMMIT}}</p>
     </section>
   </main>

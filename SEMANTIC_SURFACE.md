@@ -93,6 +93,18 @@ ECS is therefore an implementation hypothesis chosen for the accessibility probl
 
 Its usefulness must still be tested through executable evidence. If it fails to preserve that separation or creates greater barriers than it removes, the architecture may change.
 
+### Semantic ECS is the current construction language
+
+Executable pressure has now moved ECS beyond a separation hypothesis. In the current apparatus, ordinary domain descriptions can be translated directly into small components and systems without requiring the human author to formulate the implementation ontology first.
+
+The useful boundary is not "everything is an entity." Semantically consequential actors may have ECS identity while dense subordinate populations remain compact system-owned data when that is the simpler and more inspectable realization. The Jupurn probe uses ECS entities for the world object, moons, and collector while the ring field owns 1,600 simulated particles as optimized subordinate state.
+
+Systems may compose over that subordinate state. A ring particle can continue receiving orbital and perturbation behavior while a collector claims and pulls it. This is preferable to replacing the underlying simulation with a decorative animation when the interaction is itself the evidence under investigation.
+
+ECS identity also does not automatically imply human-addressable identity. Render hierarchy does not define semantic hierarchy, and implementation entities need not acquire independent selection merely because they exist. In the current probe, Jupurn owns taps across its realized planet, rings, and subordinate bodies; independent moon selection should be added only if the constructed world earns those moons as independently addressable things.
+
+The custom ECS kernel should remain small while it remains boring. Do not turn framework construction into the project. More elaborate generic machinery—query caching, archetypes, command buffers, dependency scheduling, pooling, serialization, or similar infrastructure—should be earned by concrete pressure rather than anticipated.
+
 ### Systems mutate semantic state; the frame owns presentation
 
 The first behavioral-system work has earned a scheduling boundary that should constrain subsequent runtime work.

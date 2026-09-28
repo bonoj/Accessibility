@@ -4,6 +4,10 @@ import { createApp } from "./app/create-app.js";
 import { installInspection } from "./app/inspection.js";
 
 const diagnostics = installDiagnostics(document.querySelector("#diagnostics"));
+const build = globalThis.__ACCESSIBILITY_BUILD__ || "local";
+const buildId = document.querySelector("#build-id");
+if (buildId) buildId.textContent = `build ${build.slice(0, 7)}`;
+document.querySelector("#debug-refresh")?.addEventListener("click", () => location.reload());
 
 try {
   const worldMount = document.querySelector("#world");

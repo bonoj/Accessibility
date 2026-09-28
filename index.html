@@ -78,6 +78,7 @@ body {
   min-height: 2.1rem;
   font: inherit;
 }
+#fps-counter,
 #build-id {
   padding: .42rem .5rem;
   border-radius: .4rem;
@@ -93,7 +94,7 @@ body {
   color: CanvasText;
   font: inherit;
 }
-#entity-card {
+.entity-card {
   --base-font-size: 1rem;
   --pinch-scale: 1;
   position: fixed;
@@ -110,16 +111,20 @@ body {
   font-size: calc(var(--base-font-size) * var(--pinch-scale));
   touch-action: pan-y;
 }
-#entity-card[hidden] {
+.entity-card[hidden] {
   display: none;
 }
-#entity-card[data-size=large] {
+.entity-card[data-settling=true] {
+  visibility: hidden;
+  pointer-events: none;
+}
+.entity-card[data-size=large] {
   --base-font-size: 1.5rem;
 }
-#entity-card[data-size=huge] {
+.entity-card[data-size=huge] {
   --base-font-size: 2.25rem;
 }
-#entity-card[data-expanded=true] {
+.entity-card[data-expanded=true] {
   inset: 0 !important;
   width: 100%;
   max-height: none;
@@ -129,18 +134,18 @@ body {
   box-shadow: none;
   padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
 }
-#entity-card[data-variant=edge]:not([data-expanded=true]) {
+.entity-card[data-variant=edge]:not([data-expanded=true]) {
   left: 1rem !important;
   top: 1rem !important;
   bottom: 1rem;
   max-height: none;
 }
-#entity-card[data-variant=center]:not([data-expanded=true]) {
+.entity-card[data-variant=center]:not([data-expanded=true]) {
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%);
 }
-#entity-card[data-variant=sheet]:not([data-expanded=true]) {
+.entity-card[data-variant=sheet]:not([data-expanded=true]) {
   left: 1rem !important;
   right: 1rem;
   bottom: 1rem;
@@ -167,11 +172,11 @@ body {
   text-transform: uppercase;
   letter-spacing: .08em;
 }
-#entity-card h1 {
+.entity-card h1 {
   margin: 0;
   font-size: 1.35em;
 }
-#entity-description {
+.entity-card [data-surface-role=description] {
   margin: .8rem 0 1rem;
   line-height: 1.5;
 }
@@ -186,15 +191,15 @@ body {
 .surface-controls select,
 .surface-controls input,
 .surface-controls button,
-#surface-dismiss,
-#surface-collapse {
+[data-surface-role=dismiss],
+[data-surface-role=collapse] {
   min-height: 2.75rem;
   font: inherit;
 }
 .surface-controls select,
 .surface-controls button,
-#surface-dismiss,
-#surface-collapse {
+[data-surface-role=dismiss],
+[data-surface-role=collapse] {
   padding: .45rem .65rem;
 }
 .surface-actions {
@@ -205,16 +210,16 @@ body {
 .surface-actions button {
   flex: 1 1 7rem;
 }
-#action-status {
+.entity-card [data-surface-role=status] {
   display: block;
   min-height: 1.5em;
   line-height: 1.4;
 }
-#surface-body[hidden] {
+.entity-card [data-surface-role=body][hidden] {
   display: none;
 }
 @media (max-width: 28rem) {
-  #entity-card[data-size=huge] {
+  .entity-card[data-size=huge] {
     font-size: 2rem;
   }
   #debug-tools {
@@ -229,25 +234,26 @@ body {
   <main id="app">
     <section id="world" aria-label="Spatial workstation. Drag to orbit. Pinch or use the mouse wheel to change distance."></section>
   </main>
-  <section id="entity-card" hidden aria-labelledby="entity-title">
+  <template id="entity-surface-template">
+    <section class="entity-card" hidden>
     <header class="surface-header">
       <div>
         <p class="surface-kicker">Scene entity</p>
-        <h1 id="entity-title">Ball</h1>
+        <h1 data-surface-role="title">Ball</h1>
       </div>
       <div class="surface-header-actions">
-        <button id="surface-collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
-        <button id="surface-dismiss" type="button">Dismiss</button>
+        <button data-surface-role="collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
+        <button data-surface-role="dismiss" type="button">Dismiss</button>
       </div>
     </header>
 
-    <div id="surface-body">
-      <p id="entity-description">A simple object in the scene.</p>
+    <div data-surface-role="body">
+      <p data-surface-role="description">A simple object in the scene.</p>
 
-      <div class="surface-controls" aria-label="Ball controls">
+      <div class="surface-controls" data-surface-role="controls">
         <label>
           Text quantity
-          <select id="text-quantity">
+          <select data-surface-role="quantity">
             <option value="short">Short</option>
             <option value="medium">Medium</option>
             <option value="lots">Lots</option>
@@ -256,7 +262,7 @@ body {
 
         <label>
           Font size
-          <select id="font-size">
+          <select data-surface-role="font-size">
             <option value="normal">Normal</option>
             <option value="large">Large</option>
             <option value="huge">Huge</option>
@@ -264,18 +270,19 @@ body {
         </label>
 
         <label>
-          Amount <output id="amount-value">50</output>
-          <input id="amount-slider" type="range" min="0" max="100" value="50">
+          Amount <output data-surface-role="amount-value">50</output>
+          <input data-surface-role="slider" type="range" min="0" max="100" value="50">
         </label>
 
         <div class="surface-actions">
-          <button id="ball-action" type="button">Do something</button>
-          <button id="surface-expand" type="button" aria-pressed="false">Expand</button>
+          <button data-surface-role="action" type="button">Do something</button>
+          <button data-surface-role="expand" type="button" aria-pressed="false">Expand</button>
         </div>
-        <output id="action-status" aria-live="polite">Nothing has happened yet.</output>
+        <output data-surface-role="status" aria-live="polite">Nothing has happened yet.</output>
       </div>
     </div>
-  </section>
+    </section>
+  </template>
   <aside id="debug-tools" aria-label="Temporary build controls">
     <label id="variant-control">
       Surface
@@ -286,11 +293,12 @@ body {
         <option value="sheet">Sheet</option>
       </select>
     </label>
+    <output id="fps-counter" aria-label="Frames per second">fps …</output>
     <output id="build-id">build …</output>
     <button id="debug-refresh" type="button">Refresh</button>
   </aside>
   <div id="diagnostics" role="alert" hidden></div>
-  <script>globalThis.__ACCESSIBILITY_BUILD__ = "3b388438fd8479a2f7adabb2b22a8e6217fec5c6";</script>
+  <script>globalThis.__ACCESSIBILITY_BUILD__ = "3b060e0cccb8b8be7f5d4d3391e8c8408886bb2a";</script>
   <script>
 (() => {
   var __defProp = Object.defineProperty;
@@ -374,6 +382,9 @@ ${message}`;
       LightView: world.component("LightView"),
       Surface: world.component("Surface"),
       SurfaceState: world.component("SurfaceState"),
+      Producer: world.component("Producer"),
+      Inventory: world.component("Inventory"),
+      Collectible: world.component("Collectible"),
       // Optional behavior data. Cameras without it remain ordinary static camera entities.
       OrbitBehavior: world.component("OrbitBehavior")
     };
@@ -42479,7 +42490,7 @@ void main() {
       orbit.azimuth += azimuth;
       orbit.polar += polar;
       orbit.distance += distance;
-      return apply(id);
+      return true;
     }
     function inspect(id) {
       const orbit = OrbitBehavior.get(id);
@@ -42550,25 +42561,52 @@ void main() {
 
   // src/runtime/surface-system.js
   function createSurfaceSystem({ components, entity, root = document }) {
-    const definition = components.Surface.get(entity);
-    const state = components.SurfaceState.get(entity);
-    if (!definition || !state) throw new Error("SurfaceSystem requires Surface and SurfaceState.");
-    const card = root.querySelector("#entity-card");
-    const body = root.querySelector("#surface-body");
-    const title = root.querySelector("#entity-title");
-    const kicker = root.querySelector(".surface-kicker");
-    const description = root.querySelector("#entity-description");
-    const quantity = root.querySelector("#text-quantity");
-    const fontSize = root.querySelector("#font-size");
-    const slider = root.querySelector("#amount-slider");
-    const amountValue = root.querySelector("#amount-value");
-    const status = root.querySelector("#action-status");
-    const expand = root.querySelector("#surface-expand");
-    const collapse = root.querySelector("#surface-collapse");
+    let activeEntity = entity;
+    let zCounter = 800;
+    const realizations = /* @__PURE__ */ new Map();
+    const template = root.querySelector("#entity-surface-template");
     const variant = root.querySelector("#surface-variant");
-    const required = [card, body, title, kicker, description, quantity, fontSize, slider, amountValue, status, expand, collapse, variant];
-    if (required.some((node) => !node)) throw new Error("SurfaceSystem DOM realization is incomplete.");
-    function place() {
+    if (!template) throw new Error("SurfaceSystem template is missing.");
+    function resolve(entityId = activeEntity) {
+      const definition = components.Surface.get(entityId);
+      const state = components.SurfaceState.get(entityId);
+      if (!definition || !state) throw new Error("SurfaceSystem requires Surface and SurfaceState.");
+      return { definition, state };
+    }
+    function nodes(card) {
+      const get = (role) => card.querySelector(`[data-surface-role="${role}"]`);
+      const result = {
+        card,
+        body: get("body"),
+        title: get("title"),
+        kicker: card.querySelector(".surface-kicker"),
+        description: get("description"),
+        quantity: get("quantity"),
+        fontSize: get("font-size"),
+        slider: get("slider"),
+        amountValue: get("amount-value"),
+        status: get("status"),
+        expand: get("expand"),
+        collapse: get("collapse"),
+        dismiss: get("dismiss"),
+        action: get("action")
+      };
+      if (Object.values(result).some((node) => !node)) throw new Error("SurfaceSystem DOM realization is incomplete.");
+      return result;
+    }
+    function raise(entityId) {
+      const realization = realizations.get(entityId);
+      if (!realization) return;
+      activeEntity = entityId;
+      realization.card.style.zIndex = String(++zCounter);
+      const { state } = resolve(entityId);
+      if (variant) variant.value = state.variant;
+    }
+    function place(entityId) {
+      const realization = realizations.get(entityId);
+      if (!realization) return;
+      const { card } = realization;
+      const { state } = resolve(entityId);
       if (!state.open || state.expanded || state.variant !== "float") return;
       card.style.transform = "";
       const margin = 12;
@@ -42576,54 +42614,236 @@ void main() {
       card.style.left = Math.max(margin, Math.min(innerWidth - rect.width - margin, state.anchor.x + 18)) + "px";
       card.style.top = Math.max(margin, Math.min(innerHeight - rect.height - margin, state.anchor.y - rect.height / 2)) + "px";
     }
-    function sync() {
-      card.hidden = !state.open;
-      title.textContent = definition.title;
-      kicker.textContent = definition.kicker;
-      description.textContent = definition.copy[state.textQuantity] || definition.copy.short;
-      quantity.value = state.textQuantity;
-      fontSize.value = state.fontSize;
-      slider.value = String(state.amount);
-      amountValue.value = String(state.amount);
-      status.value = state.actionStatus;
-      variant.value = state.variant;
-      card.dataset.variant = state.variant;
-      card.dataset.size = state.fontSize;
-      card.dataset.expanded = String(state.expanded);
-      card.style.setProperty("--pinch-scale", String(state.pinchScale));
-      body.hidden = state.collapsed;
-      collapse.setAttribute("aria-expanded", String(!state.collapsed));
-      collapse.textContent = state.collapsed ? "Expand content" : "Collapse";
-      expand.setAttribute("aria-pressed", String(state.expanded));
-      expand.textContent = state.expanded ? "Shrink" : "Expand";
-      if (state.open) requestAnimationFrame(place);
+    function sync(entityId = activeEntity, { settling = false } = {}) {
+      const { definition, state } = resolve(entityId);
+      let realization = realizations.get(entityId);
+      if (!realization && !state.open) return;
+      if (!realization) realization = realize(entityId);
+      const n = realization;
+      n.card.hidden = !state.open;
+      n.card.dataset.settling = String(settling && state.open);
+      n.title.textContent = definition.title;
+      n.kicker.textContent = definition.kicker;
+      n.description.textContent = definition.copy[state.textQuantity] || definition.copy.short;
+      n.quantity.value = state.textQuantity;
+      n.fontSize.value = state.fontSize;
+      n.slider.value = String(state.amount);
+      n.amountValue.value = String(state.amount);
+      n.status.value = state.actionStatus;
+      n.card.dataset.variant = state.variant;
+      n.card.dataset.size = state.fontSize;
+      n.card.dataset.expanded = String(state.expanded);
+      n.card.style.setProperty("--pinch-scale", String(state.pinchScale));
+      n.body.hidden = state.collapsed;
+      n.collapse.setAttribute("aria-expanded", String(!state.collapsed));
+      n.collapse.textContent = state.collapsed ? "Expand content" : "Collapse";
+      n.expand.setAttribute("aria-pressed", String(state.expanded));
+      n.expand.textContent = state.expanded ? "Shrink" : "Expand";
+      if (entityId === activeEntity && variant) variant.value = state.variant;
+      if (state.open && settling) {
+        requestAnimationFrame(() => {
+          place(entityId);
+          n.card.dataset.settling = "false";
+        });
+      }
     }
-    function openAt(x, y) {
+    function refreshOpen() {
+      for (const [entityId] of realizations) {
+        if (components.SurfaceState.get(entityId)?.open) sync(entityId);
+      }
+    }
+    function patchEntity(entityId, values) {
+      const { state } = resolve(entityId);
+      Object.assign(state, values);
+      sync(entityId);
+    }
+    function realize(entityId) {
+      const fragment2 = template.content.cloneNode(true);
+      const card = fragment2.querySelector(".entity-card");
+      if (!card) throw new Error("SurfaceSystem template has no entity card.");
+      const n = nodes(card);
+      const titleId = `entity-title-${entityId}`;
+      n.title.id = titleId;
+      card.setAttribute("aria-labelledby", titleId);
+      card.dataset.entity = String(entityId);
+      root.body.appendChild(fragment2);
+      realizations.set(entityId, n);
+      let pinchStartDistance = 0;
+      let pinchStartScale = 1;
+      const pointers = /* @__PURE__ */ new Map();
+      card.addEventListener("pointerdown", (event) => {
+        raise(entityId);
+        if (event.pointerType !== "touch") return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size === 2) {
+          const [a, b] = [...pointers.values()];
+          pinchStartDistance = Math.hypot(a.x - b.x, a.y - b.y);
+          pinchStartScale = resolve(entityId).state.pinchScale;
+        }
+      });
+      card.addEventListener("pointermove", (event) => {
+        if (!pointers.has(event.pointerId)) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size !== 2 || pinchStartDistance <= 0) return;
+        const [a, b] = [...pointers.values()];
+        const distance = Math.hypot(a.x - b.x, a.y - b.y);
+        patchEntity(entityId, { pinchScale: Math.max(0.8, Math.min(3, pinchStartScale * distance / pinchStartDistance)) });
+      });
+      const release = (event) => {
+        pointers.delete(event.pointerId);
+        if (pointers.size < 2) pinchStartDistance = 0;
+      };
+      card.addEventListener("pointerup", release);
+      card.addEventListener("pointercancel", release);
+      n.quantity.addEventListener("change", () => patchEntity(entityId, { textQuantity: n.quantity.value }));
+      n.fontSize.addEventListener("change", () => patchEntity(entityId, { fontSize: n.fontSize.value }));
+      n.slider.addEventListener("input", () => patchEntity(entityId, { amount: Number(n.slider.value) }));
+      n.action.addEventListener("click", () => {
+        const name = resolve(entityId).definition.title.toLowerCase();
+        patchEntity(entityId, { actionStatus: `The ${name} noticed. The control works.` });
+      });
+      n.expand.addEventListener("click", () => toggleExpanded(entityId));
+      n.collapse.addEventListener("click", () => toggleCollapsed(entityId));
+      n.dismiss.addEventListener("click", () => dismiss(entityId));
+      return n;
+    }
+    function openAt(x, y, entityId = activeEntity) {
+      const { state } = resolve(entityId);
+      activeEntity = entityId;
       state.open = true;
       state.anchor = { x, y };
-      sync();
+      if (!realizations.has(entityId)) realize(entityId);
+      raise(entityId);
+      sync(entityId, { settling: true });
     }
-    function dismiss() {
+    function dismiss(entityId = activeEntity) {
+      const { state } = resolve(entityId);
       state.open = false;
       state.pinchScale = 1;
-      sync();
+      sync(entityId);
     }
-    function toggleCollapsed() {
+    function toggleCollapsed(entityId = activeEntity) {
+      const { state } = resolve(entityId);
       state.collapsed = !state.collapsed;
       if (state.collapsed) state.pinchScale = 1;
-      sync();
+      sync(entityId);
     }
-    function toggleExpanded() {
+    function toggleExpanded(entityId = activeEntity) {
+      const { state } = resolve(entityId);
       state.expanded = !state.expanded;
-      sync();
+      sync(entityId);
     }
-    function patch(values) {
-      Object.assign(state, values);
-      sync();
+    function patch(values, entityId = activeEntity) {
+      patchEntity(entityId, values);
     }
-    sync();
-    addEventListener("resize", place);
-    return { definition, state, sync, place, openAt, dismiss, toggleCollapsed, toggleExpanded, patch };
+    if (variant) {
+      variant.addEventListener("change", () => patchEntity(activeEntity, { variant: variant.value }));
+    }
+    addEventListener("resize", () => {
+      for (const entityId of realizations.keys()) place(entityId);
+    });
+    return {
+      get entity() {
+        return activeEntity;
+      },
+      get definition() {
+        return resolve(activeEntity).definition;
+      },
+      get state() {
+        return resolve(activeEntity).state;
+      },
+      sync,
+      refreshOpen,
+      place,
+      openAt,
+      dismiss,
+      toggleCollapsed,
+      toggleExpanded,
+      patch,
+      raise
+    };
+  }
+
+  // src/runtime/production-system.js
+  function createProductionSystem({ world, components, THREE, scene, now = () => performance.now() }) {
+    const { Producer, Transform, RenderObject, Collectible } = components;
+    function spawn(producerId) {
+      const producer = Producer.get(producerId);
+      const source = Transform.get(producerId);
+      if (!producer || !source) return null;
+      const id = world.entity();
+      const angle = producer.produced * 2.399963229728653;
+      const radius = 0.9 + producer.produced % 3 * 0.08;
+      const position = source.position.clone().add(new THREE.Vector3(
+        Math.cos(angle) * radius,
+        -0.82,
+        Math.sin(angle) * radius
+      ));
+      const object = new THREE.Mesh(
+        new THREE.SphereGeometry(0.105, 12, 8),
+        new THREE.MeshStandardMaterial({ color: 11570519, roughness: 0.48, metalness: 0.58 })
+      );
+      object.castShadow = true;
+      scene.add(object);
+      world.add(id, Transform, {
+        position,
+        rotation: new THREE.Euler(),
+        scale: new THREE.Vector3(1, 1, 1),
+        visible: true
+      });
+      world.add(id, RenderObject, { object });
+      world.add(id, Collectible, { kind: producer.kind, source: producerId });
+      producer.produced += 1;
+      return id;
+    }
+    function update(time = now()) {
+      for (const id of world.query(Producer, Transform)) {
+        const producer = Producer.get(id);
+        if (producer.nextAt == null) producer.nextAt = time + producer.intervalMs;
+        if (time < producer.nextAt) continue;
+        spawn(id);
+        producer.nextAt = time + producer.intervalMs;
+      }
+    }
+    return { update, spawn };
+  }
+
+  // src/runtime/collection-system.js
+  function createCollectionSystem({ world, components, scene }) {
+    const { Inventory, Collectible, Transform, RenderObject } = components;
+    function update(dt) {
+      const collectors = world.query(Inventory, Transform);
+      for (const itemId of world.query(Collectible, Transform)) {
+        const item = Collectible.get(itemId);
+        const itemTransform = Transform.get(itemId);
+        let targetId = null;
+        let targetDistance = Infinity;
+        for (const collectorId of collectors) {
+          const inventory = Inventory.get(collectorId);
+          if (inventory.count >= inventory.capacity) continue;
+          if (inventory.accepts && inventory.accepts !== item.kind) continue;
+          const distance2 = itemTransform.position.distanceTo(Transform.get(collectorId).position);
+          if (distance2 < targetDistance) {
+            targetDistance = distance2;
+            targetId = collectorId;
+          }
+        }
+        if (targetId == null) continue;
+        const target = Transform.get(targetId).position;
+        const delta = target.clone().sub(itemTransform.position);
+        const distance = delta.length();
+        const step = Math.min(distance, 1.15 * dt);
+        if (distance > 0) itemTransform.position.addScaledVector(delta.normalize(), step);
+        if (distance <= 0.34) {
+          const inventory = Inventory.get(targetId);
+          inventory.count += 1;
+          const object = RenderObject.get(itemId)?.object;
+          if (object) scene.remove(object);
+          world.destroy(itemId);
+        }
+      }
+    }
+    return { update };
   }
 
   // src/probes/adaptive-entity-surface.js
@@ -42686,6 +42906,35 @@ void main() {
     const probe = adaptiveEntitySurfaceProbe.witness;
     world.add(witness, components.Surface, structuredClone(probe.surface));
     world.add(witness, components.SurfaceState, structuredClone(probe.surfaceState));
+    world.add(witness, components.Producer, { kind: "bearing", intervalMs: 2200, produced: 0, nextAt: null });
+    const cube = world.entity();
+    const cubeObject = new three.THREE.Mesh(
+      new three.THREE.BoxGeometry(1.15, 1.15, 1.15),
+      new three.THREE.MeshStandardMaterial({ color: 13154728, roughness: 0.72, metalness: 0.03 })
+    );
+    cubeObject.castShadow = true;
+    three.scene.add(cubeObject);
+    world.add(cube, components.Transform, {
+      position: new three.THREE.Vector3(2.15, 0.575, 0),
+      rotation: new three.THREE.Euler(),
+      scale: new three.THREE.Vector3(1, 1, 1),
+      visible: true
+    });
+    world.add(cube, components.RenderObject, { object: cubeObject });
+    world.add(cube, components.Surface, {
+      title: "Cube",
+      kicker: "ENTITY SURFACE",
+      copy: {
+        short: "A simple cube in the scene.",
+        medium: "A simple cube in the scene. It uses the same adaptive surface machinery as the ball.",
+        lots: "A simple cube in the scene. It uses the same adaptive surface machinery as the ball. This deliberately boring second entity exists to test whether semantic identity can travel cleanly from a spatial selection into one reusable DOM realization without giving the cube bespoke interface code."
+      }
+    });
+    world.add(cube, components.SurfaceState, {
+      ...structuredClone(probe.surfaceState),
+      actionStatus: "Nothing has happened yet."
+    });
+    world.add(cube, components.Inventory, { accepts: "bearing", count: 0, capacity: 10 });
     function addCamera({ name, projection = "perspective", position, orbit: orbit2, fov: fov2 = 48, height = 5 }) {
       const id = world.entity();
       world.add(id, components.Transform, {
@@ -42717,6 +42966,8 @@ void main() {
     const cameras = createCameraSystem({ world, components, three });
     const lights = createLightSystem({ world, components, three });
     const surfaces = createSurfaceSystem({ components, entity: witness });
+    const production = createProductionSystem({ world, components, THREE: three.THREE, scene: three.scene });
+    const collection = createCollectionSystem({ world, components, scene: three.scene });
     orbit.applyAll();
     function addLight({ name, kind, color, groundColor, intensity, position, castShadow = false }) {
       const id = world.entity();
@@ -42732,26 +42983,55 @@ void main() {
     const skyLight = addLight({ name: "Sky", kind: "hemisphere", color: 16776178, groundColor: 12171442, intensity: 2.2, position: [0, 5, 0] });
     const keyLight = addLight({ name: "Key", kind: "directional", color: 16774623, intensity: 2.4, position: [4, 7, 5], castShadow: true });
     lights.syncAll();
-    function render() {
+    let lastFrame = performance.now();
+    let fpsWindowStart = lastFrame;
+    let fpsFrames = 0;
+    const fpsCounter = document.querySelector("#fps-counter");
+    function draw() {
       orbit.applyAll();
       lights.syncAll();
       renderSync();
       cameras.render();
     }
-    render();
+    function frame(time) {
+      const dt = Math.min(0.05, Math.max(0, (time - lastFrame) / 1e3));
+      lastFrame = time;
+      fpsFrames += 1;
+      if (time - fpsWindowStart >= 500) {
+        if (fpsCounter) fpsCounter.textContent = `fps ${Math.round(fpsFrames * 1e3 / (time - fpsWindowStart))}`;
+        fpsWindowStart = time;
+        fpsFrames = 0;
+      }
+      production.update(time);
+      collection.update(dt);
+      const producer = components.Producer.get(witness);
+      const inventory = components.Inventory.get(cube);
+      const ballSurface = components.Surface.get(witness);
+      const cubeSurface = components.Surface.get(cube);
+      if (producer && ballSurface) ballSurface.copy.short = `A ball that has produced ${producer.produced} small brass balls.`;
+      if (inventory && cubeSurface) cubeSurface.copy.short = `A cube holding ${inventory.count} of ${inventory.capacity} small brass balls.`;
+      surfaces.refreshOpen();
+      draw();
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
     return {
       world,
       components,
       events,
       three,
-      systems: { renderSync, cameras, orbit, lights, surfaces },
-      entities: { witness, overviewCamera, sideCamera, skyLight, keyLight },
-      render,
+      systems: { renderSync, cameras, orbit, lights, surfaces, production, collection },
+      entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
       inspect: () => ({
         entities: world.alive.size,
         build: globalThis.__ACCESSIBILITY_BUILD__,
         pixelRatio: three.renderer.getPixelRatio(),
         activeCamera: cameras.activeId(),
+        behavior: {
+          producer: components.Producer.get(witness),
+          inventory: components.Inventory.get(cube),
+          looseCollectibles: world.query(components.Collectible).length
+        },
         surface: {
           definition: components.Surface.get(witness),
           state: components.SurfaceState.get(witness)
@@ -42766,11 +43046,10 @@ void main() {
   }
 
   // src/runtime/orbit-input.js
-  function installOrbitInput({ element, activeCamera, orbit, render, onChange }) {
+  function installOrbitInput({ element, activeCamera, orbit, onChange }) {
     const pointers = /* @__PURE__ */ new Map();
     let pinchDistance = null;
     function notify() {
-      render();
       onChange?.();
     }
     function orbitBy(dx, dy) {
@@ -42825,72 +43104,27 @@ void main() {
   // src/app/inspection.js
   function installInspection({ app, root }) {
     const world = root.querySelector("#world");
-    const card = document.querySelector("#entity-card");
-    const quantity = document.querySelector("#text-quantity");
-    const fontSize = document.querySelector("#font-size");
-    const slider = document.querySelector("#amount-slider");
-    const action = document.querySelector("#ball-action");
-    const expand = document.querySelector("#surface-expand");
-    const collapse = document.querySelector("#surface-collapse");
-    const dismiss = document.querySelector("#surface-dismiss");
-    const variant = document.querySelector("#surface-variant");
     const surface = app.systems.surfaces;
     const canvas = app.three.renderer.domElement;
     const raycaster = new app.three.THREE.Raycaster();
     const pointer = new app.three.THREE.Vector2();
     const starts = /* @__PURE__ */ new Map();
-    const surfacePointers = /* @__PURE__ */ new Map();
-    let pinchStartDistance = 0;
-    let pinchStartScale = 1;
     installOrbitInput({
       element: world,
       activeCamera: () => app.systems.cameras.activeId(),
-      orbit: app.systems.orbit,
-      render: app.render
+      orbit: app.systems.orbit
     });
-    function hitWitness(x, y) {
+    function hitSurfaceEntity(x, y) {
       const rect = canvas.getBoundingClientRect();
       pointer.set((x - rect.left) / rect.width * 2 - 1, -((y - rect.top) / rect.height) * 2 + 1);
       const cameraId = app.systems.cameras.activeId();
       const camera = cameraId == null ? null : app.components.CameraView.get(cameraId)?.camera;
-      const object = app.components.RenderObject.get(app.entities.witness)?.object;
-      if (!camera || !object) return false;
+      if (!camera) return null;
+      const candidates = [app.entities.witness, app.entities.cube].map((entity) => ({ entity, object: app.components.RenderObject.get(entity)?.object })).filter((candidate) => candidate.object);
       raycaster.setFromCamera(pointer, camera);
-      return raycaster.intersectObject(object, false).length > 0;
-    }
-    quantity?.addEventListener("change", () => surface.patch({ textQuantity: quantity.value }));
-    fontSize?.addEventListener("change", () => surface.patch({ fontSize: fontSize.value }));
-    slider?.addEventListener("input", () => surface.patch({ amount: Number(slider.value) }));
-    action?.addEventListener("click", () => surface.patch({ actionStatus: "The ball noticed. The control works." }));
-    expand?.addEventListener("click", () => surface.toggleExpanded());
-    collapse?.addEventListener("click", () => surface.toggleCollapsed());
-    dismiss?.addEventListener("click", () => surface.dismiss());
-    variant?.addEventListener("change", () => surface.patch({ variant: variant.value }));
-    if (card) {
-      card.addEventListener("pointerdown", (event) => {
-        if (event.pointerType !== "touch") return;
-        surfacePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (surfacePointers.size === 2) {
-          const [a, b] = [...surfacePointers.values()];
-          pinchStartDistance = Math.hypot(a.x - b.x, a.y - b.y);
-          pinchStartScale = surface.state.pinchScale;
-        }
-      });
-      card.addEventListener("pointermove", (event) => {
-        if (!surfacePointers.has(event.pointerId)) return;
-        surfacePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (surfacePointers.size !== 2 || pinchStartDistance <= 0) return;
-        const [a, b] = [...surfacePointers.values()];
-        const distance = Math.hypot(a.x - b.x, a.y - b.y);
-        const pinchScale = Math.max(0.8, Math.min(3, pinchStartScale * distance / pinchStartDistance));
-        surface.patch({ pinchScale });
-      });
-      const release = (event) => {
-        surfacePointers.delete(event.pointerId);
-        if (surfacePointers.size < 2) pinchStartDistance = 0;
-      };
-      card.addEventListener("pointerup", release);
-      card.addEventListener("pointercancel", release);
+      const hits = raycaster.intersectObjects(candidates.map((candidate) => candidate.object), false);
+      if (!hits.length) return null;
+      return candidates.find((candidate) => candidate.object === hits[0].object)?.entity ?? null;
     }
     world.addEventListener("pointerdown", (event) => {
       starts.set(event.pointerId, { x: event.clientX, y: event.clientY, t: performance.now() });
@@ -42900,8 +43134,11 @@ void main() {
       starts.delete(event.pointerId);
       if (!start) return;
       const travel = Math.hypot(event.clientX - start.x, event.clientY - start.y);
-      if (travel < 10 && performance.now() - start.t < 420 && hitWitness(event.clientX, event.clientY)) {
-        surface.openAt(event.clientX, event.clientY);
+      if (travel < 10 && performance.now() - start.t < 420) {
+        const entity = hitSurfaceEntity(event.clientX, event.clientY);
+        if (entity != null) {
+          requestAnimationFrame(() => surface.openAt(event.clientX, event.clientY, entity));
+        }
       }
     });
     world.addEventListener("pointercancel", (event) => starts.delete(event.pointerId));

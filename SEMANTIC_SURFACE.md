@@ -93,6 +93,14 @@ ECS is therefore an implementation hypothesis chosen for the accessibility probl
 
 Its usefulness must still be tested through executable evidence. If it fails to preserve that separation or creates greater barriers than it removes, the architecture may change.
 
+### Semantic state should survive representation
+
+The first adaptive entity-surface probe has earned a concrete separation: meaningful entity and surface state belongs to the semantic ECS world, while Three.js and DOM are disposable realizations of that state.
+
+A spatial object may summon a reflowable web surface without either representation becoming the owner of the entity. The language surface may temporarily claim the entire viewport while the spatial runtime continues underneath.
+
+This does not require every entity to have a permanently realized DOM tree, nor does it yet decide how many surfaces may be simultaneously realized.
+
 ### Source and executable are dual surfaces
 
 Accessibility keeps inspectable source code and a continuously usable executable as distinct but connected surfaces.
@@ -110,6 +118,8 @@ Do not prematurely decide that the correct apparatus is Foundry, a node graph, a
 ECS has now been selected for the first implementation because it directly addresses an observed separation problem, but that selection remains falsifiable.
 
 Build bounded probes. Observe use. Promote mechanisms and vocabulary when they prove useful.
+
+Prefer the smallest cut that produces independently inspectable evidence. Long investigations should be composed from short, independently persistent model turns where practical. Git checkpoints reduce the amount of fragile private state that must survive a long run: interruption should ordinarily cost the current cut, not the whole expedition.
 
 ## Authority boundaries
 

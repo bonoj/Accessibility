@@ -14,6 +14,7 @@ body { height: 100dvh; overflow: hidden; background: #f1f0eb; }
 
 #entity-card { --base-font-size: 1rem; --pinch-scale: 1; position: fixed; z-index: 800; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: .8rem; background: color-mix(in srgb, Canvas 96%, transparent); color: CanvasText; box-shadow: 0 .5rem 2rem #0002; font-size: calc(var(--base-font-size) * var(--pinch-scale)); touch-action: pan-y; }
 #entity-card[hidden] { display: none; }
+#entity-card[data-settling="true"] { visibility: hidden; pointer-events: none; }
 #entity-card[data-size="large"] { --base-font-size: 1.5rem; }
 #entity-card[data-size="huge"] { --base-font-size: 2.25rem; }
 #entity-card[data-expanded="true"] { inset: 0 !important; width: 100%; max-height: none; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }

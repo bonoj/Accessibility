@@ -298,7 +298,7 @@ body {
     <button id="debug-refresh" type="button">Refresh</button>
   </aside>
   <div id="diagnostics" role="alert" hidden></div>
-  <script>globalThis.__ACCESSIBILITY_BUILD__ = "3b060e0cccb8b8be7f5d4d3391e8c8408886bb2a";</script>
+  <script>globalThis.__ACCESSIBILITY_BUILD__ = "ae15bf8a08ec37ba050afb7311e504c02236344b";</script>
   <script>
 (() => {
   var __defProp = Object.defineProperty;
@@ -385,6 +385,7 @@ ${message}`;
       Producer: world.component("Producer"),
       Inventory: world.component("Inventory"),
       Collectible: world.component("Collectible"),
+      OrbitingBody: world.component("OrbitingBody"),
       // Optional behavior data. Cameras without it remain ordinary static camera entities.
       OrbitBehavior: world.component("OrbitBehavior")
     };
@@ -42764,50 +42765,6 @@ void main() {
     };
   }
 
-  // src/runtime/production-system.js
-  function createProductionSystem({ world, components, THREE, scene, now = () => performance.now() }) {
-    const { Producer, Transform, RenderObject, Collectible } = components;
-    function spawn(producerId) {
-      const producer = Producer.get(producerId);
-      const source = Transform.get(producerId);
-      if (!producer || !source) return null;
-      const id = world.entity();
-      const angle = producer.produced * 2.399963229728653;
-      const radius = 0.9 + producer.produced % 3 * 0.08;
-      const position = source.position.clone().add(new THREE.Vector3(
-        Math.cos(angle) * radius,
-        -0.82,
-        Math.sin(angle) * radius
-      ));
-      const object = new THREE.Mesh(
-        new THREE.SphereGeometry(0.105, 12, 8),
-        new THREE.MeshStandardMaterial({ color: 11570519, roughness: 0.48, metalness: 0.58 })
-      );
-      object.castShadow = true;
-      scene.add(object);
-      world.add(id, Transform, {
-        position,
-        rotation: new THREE.Euler(),
-        scale: new THREE.Vector3(1, 1, 1),
-        visible: true
-      });
-      world.add(id, RenderObject, { object });
-      world.add(id, Collectible, { kind: producer.kind, source: producerId });
-      producer.produced += 1;
-      return id;
-    }
-    function update(time = now()) {
-      for (const id of world.query(Producer, Transform)) {
-        const producer = Producer.get(id);
-        if (producer.nextAt == null) producer.nextAt = time + producer.intervalMs;
-        if (time < producer.nextAt) continue;
-        spawn(id);
-        producer.nextAt = time + producer.intervalMs;
-      }
-    }
-    return { update, spawn };
-  }
-
   // src/runtime/collection-system.js
   function createCollectionSystem({ world, components, scene }) {
     const { Inventory, Collectible, Transform, RenderObject } = components;
@@ -42844,6 +42801,166 @@ void main() {
       }
     }
     return { update };
+  }
+
+  // src/runtime/orbital-system.js
+  function createOrbitalSystem({ world, components }) {
+    const { OrbitingBody } = components;
+    function update(timeSeconds) {
+      for (const id of world.query(OrbitingBody)) {
+        const orbit = OrbitingBody.get(id);
+        if (!orbit?.object) continue;
+        const angle = (orbit.phase ?? 0) + timeSeconds * orbit.rate;
+        orbit.object.position.set(
+          Math.cos(angle) * orbit.radius,
+          (orbit.verticalAmplitude ?? 0) * Math.sin(angle * (orbit.verticalFrequency ?? 0.7) + (orbit.verticalPhase ?? 0)),
+          Math.sin(angle) * orbit.radius
+        );
+      }
+    }
+    return { update };
+  }
+
+  // src/runtime/ring-field-system.js
+  function createRingFieldSystem({ THREE, parent, count = 1600 }) {
+    const geometry = new THREE.SphereGeometry(0.023, 5, 4);
+    const material = new THREE.MeshStandardMaterial({ color: 11570519, roughness: 0.5, metalness: 0.5 });
+    const mesh = new THREE.InstancedMesh(geometry, material, count);
+    mesh.castShadow = true;
+    parent.add(mesh);
+    const bands = [
+      { inner: 1.18, outer: 1.58, density: 0.92, rate: 0.105 },
+      { inner: 1.72, outer: 2.18, density: 1, rate: 0.086 },
+      { inner: 2.34, outer: 2.86, density: 0.82, rate: 0.069 }
+    ];
+    const particles = [];
+    let seed = 5370206;
+    const random = () => {
+      seed = Math.imul(seed, 1664525) + 1013904223 >>> 0;
+      return seed / 4294967296;
+    };
+    const weights = bands.map((band) => (band.outer - band.inner) * band.density);
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    for (let i = 0; i < count; i += 1) {
+      let pick = random() * totalWeight;
+      let bandIndex = 0;
+      while (bandIndex < bands.length - 1 && pick > weights[bandIndex]) pick -= weights[bandIndex++];
+      const band = bands[bandIndex];
+      const radius = band.inner + (band.outer - band.inner) * Math.sqrt(random());
+      particles.push({
+        radius,
+        homeRadius: radius,
+        angle: random() * Math.PI * 2,
+        rate: band.rate * Math.pow(band.inner / radius, 1.5),
+        verticalAmplitude: 8e-3 + random() * 0.025,
+        verticalFrequency: 0.22 + random() * 0.31,
+        verticalPhase: random() * Math.PI * 2,
+        radialPhase: random() * Math.PI * 2,
+        disturbance: 0,
+        present: true,
+        claimedBy: null,
+        pull: 0
+      });
+    }
+    const dummy = new THREE.Object3D();
+    const clearers = [];
+    const collectors = [];
+    function addClearer(clearer) {
+      clearers.push(clearer);
+    }
+    function addCollector(collector) {
+      collectors.push(collector);
+    }
+    function update(dt, timeSeconds) {
+      const positions = new Array(particles.length);
+      for (let i = 0; i < particles.length; i += 1) {
+        const particle = particles[i];
+        if (!particle.present) continue;
+        particle.angle = (particle.angle + particle.rate * dt) % (Math.PI * 2);
+        const baseRadius = particle.homeRadius + Math.sin(timeSeconds * 0.12 + particle.radialPhase) * 0.012;
+        let disturbance = 0;
+        for (const clearer of clearers) {
+          const orbit = clearer.orbit;
+          const moonAngle = (orbit.phase ?? 0) + timeSeconds * orbit.rate;
+          const angularDelta = Math.atan2(Math.sin(particle.angle - moonAngle), Math.cos(particle.angle - moonAngle));
+          const radialDelta = baseRadius - orbit.radius;
+          const distance = Math.hypot(radialDelta, angularDelta * orbit.radius);
+          if (distance < clearer.influenceRadius) {
+            const strength = 1 - distance / clearer.influenceRadius;
+            disturbance = Math.max(disturbance, strength);
+            particle.disturbance = Math.max(particle.disturbance, strength);
+          }
+        }
+        particle.disturbance = Math.max(disturbance, particle.disturbance - dt * 0.34);
+        const displacedRadius = baseRadius + particle.disturbance * 0.16 * Math.sign(Math.sin(particle.radialPhase) || 1);
+        positions[i] = {
+          x: Math.cos(particle.angle) * displacedRadius,
+          y: Math.sin(timeSeconds * particle.verticalFrequency + particle.verticalPhase) * particle.verticalAmplitude + particle.disturbance * 0.035 * Math.sin(particle.angle * 7 + particle.verticalPhase),
+          z: Math.sin(particle.angle) * displacedRadius
+        };
+      }
+      for (const collector of collectors) {
+        let claimedIndex = particles.findIndex((particle) => particle.present && particle.claimedBy === collector);
+        if (claimedIndex < 0) {
+          let nearestIndex = -1;
+          let nearestDistance = collector.acquisitionRadius;
+          for (let i = 0; i < particles.length; i += 1) {
+            const particle = particles[i];
+            const position = positions[i];
+            if (!particle.present || particle.claimedBy || !position) continue;
+            const distance = Math.hypot(
+              position.x - collector.localPosition.x,
+              position.y - collector.localPosition.y,
+              position.z - collector.localPosition.z
+            );
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestIndex = i;
+            }
+          }
+          if (nearestIndex >= 0) {
+            particles[nearestIndex].claimedBy = collector;
+            particles[nearestIndex].pull = 0;
+            claimedIndex = nearestIndex;
+          }
+        }
+        if (claimedIndex >= 0) {
+          const particle = particles[claimedIndex];
+          const position = positions[claimedIndex];
+          particle.pull = Math.min(1, particle.pull + dt * collector.pullRate);
+          const eased = particle.pull * particle.pull * (3 - 2 * particle.pull);
+          position.x += (collector.localPosition.x - position.x) * eased;
+          position.y += (collector.localPosition.y - position.y) * eased;
+          position.z += (collector.localPosition.z - position.z) * eased;
+          const distance = Math.hypot(
+            position.x - collector.localPosition.x,
+            position.y - collector.localPosition.y,
+            position.z - collector.localPosition.z
+          );
+          if (distance <= collector.captureRadius || particle.pull >= 1) {
+            particle.present = false;
+            particle.claimedBy = null;
+            particle.pull = 0;
+            collector.collect(1);
+          }
+        }
+      }
+      for (let i = 0; i < particles.length; i += 1) {
+        const particle = particles[i];
+        const position = positions[i];
+        if (!particle.present || !position) {
+          dummy.position.set(0, -1e3, 0);
+          dummy.scale.setScalar(0);
+        } else {
+          dummy.position.set(position.x, position.y, position.z);
+          dummy.scale.setScalar(0.7 + i % 9 * 0.045);
+        }
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+    return { mesh, particles, bands, addClearer, addCollector, update };
   }
 
   // src/probes/adaptive-entity-surface.js
@@ -42883,12 +43000,18 @@ void main() {
     const three = createThreeRuntime({ mount: worldMount, diagnostics: diagnostics2 });
     const renderSync = createRenderSyncSystem({ world, components });
     const witness = world.entity();
-    const object = new three.THREE.Mesh(
-      new three.THREE.IcosahedronGeometry(0.72, 2),
-      new three.THREE.MeshStandardMaterial({ color: 12109002, roughness: 0.68, metalness: 0.04 })
+    const saturn = new three.THREE.Group();
+    saturn.rotation.z = -0.16;
+    const planet = new three.THREE.Mesh(
+      new three.THREE.SphereGeometry(0.82, 32, 20),
+      new three.THREE.MeshStandardMaterial({ color: 13219981, roughness: 0.76, metalness: 0.02 })
     );
-    object.castShadow = true;
-    three.scene.add(object);
+    planet.scale.y = 0.91;
+    planet.castShadow = true;
+    saturn.add(planet);
+    three.scene.add(saturn);
+    const object = saturn;
+    const ringField = createRingFieldSystem({ THREE: three.THREE, parent: saturn, count: 1600 });
     const floor = new three.THREE.Mesh(
       new three.THREE.PlaneGeometry(18, 18),
       new three.THREE.MeshStandardMaterial({ color: 15066076, roughness: 0.92 })
@@ -42897,7 +43020,7 @@ void main() {
     floor.receiveShadow = true;
     three.scene.add(floor);
     world.add(witness, components.Transform, {
-      position: new three.THREE.Vector3(0, 1.05, 0),
+      position: new three.THREE.Vector3(0, 2.55, 0),
       rotation: new three.THREE.Euler(),
       scale: new three.THREE.Vector3(1, 1, 1),
       visible: true
@@ -42906,7 +43029,46 @@ void main() {
     const probe = adaptiveEntitySurfaceProbe.witness;
     world.add(witness, components.Surface, structuredClone(probe.surface));
     world.add(witness, components.SurfaceState, structuredClone(probe.surfaceState));
-    world.add(witness, components.Producer, { kind: "bearing", intervalMs: 2200, produced: 0, nextAt: null });
+    const moonSpecs = [
+      { radius: 3.35, size: 0.13, rate: 0.32, phase: 0 },
+      { radius: 3.85, size: 0.16, rate: 0.16, phase: 1.75 },
+      { radius: 4.45, size: 0.2, rate: 0.08, phase: 3.45 }
+    ];
+    const resonantMoons = moonSpecs.map((spec, index) => {
+      const id = world.entity();
+      const moon = new three.THREE.Mesh(
+        new three.THREE.SphereGeometry(spec.size, 12, 8),
+        new three.THREE.MeshStandardMaterial({ color: 14144456, roughness: 0.88 })
+      );
+      moon.castShadow = true;
+      saturn.add(moon);
+      world.add(id, components.OrbitingBody, {
+        object: moon,
+        radius: spec.radius,
+        rate: spec.rate,
+        phase: spec.phase,
+        verticalAmplitude: 0.035 + index * 0.012,
+        verticalFrequency: 0.7
+      });
+      return id;
+    });
+    const clearingMoon = world.entity();
+    const clearingMoonObject = new three.THREE.Mesh(
+      new three.THREE.SphereGeometry(0.09, 12, 8),
+      new three.THREE.MeshStandardMaterial({ color: 14999506, roughness: 0.9 })
+    );
+    clearingMoonObject.castShadow = true;
+    saturn.add(clearingMoonObject);
+    const clearingOrbit = {
+      object: clearingMoonObject,
+      radius: 2.27,
+      rate: 0.095,
+      phase: 0.8,
+      verticalAmplitude: 0.055,
+      verticalFrequency: 0.9
+    };
+    world.add(clearingMoon, components.OrbitingBody, clearingOrbit);
+    ringField.addClearer({ orbit: clearingOrbit, influenceRadius: 0.26 });
     const cube = world.entity();
     const cubeObject = new three.THREE.Mesh(
       new three.THREE.BoxGeometry(1.15, 1.15, 1.15),
@@ -42934,7 +43096,20 @@ void main() {
       ...structuredClone(probe.surfaceState),
       actionStatus: "Nothing has happened yet."
     });
-    world.add(cube, components.Inventory, { accepts: "bearing", count: 0, capacity: 10 });
+    const cubeInventory = world.add(cube, components.Inventory, { accepts: "ring-matter", count: 0, capacity: Infinity });
+    saturn.position.copy(components.Transform.get(witness).position);
+    saturn.updateWorldMatrix(true, false);
+    const cubeWorldPosition = components.Transform.get(cube).position.clone();
+    const cubeLocalPosition = saturn.worldToLocal(cubeWorldPosition.clone());
+    ringField.addCollector({
+      localPosition: cubeLocalPosition,
+      acquisitionRadius: 3.4,
+      captureRadius: 0.16,
+      pullRate: 0.62,
+      collect(amount) {
+        cubeInventory.count += amount;
+      }
+    });
     function addCamera({ name, projection = "perspective", position, orbit: orbit2, fov: fov2 = 48, height = 5 }) {
       const id = world.entity();
       world.add(id, components.Transform, {
@@ -42952,22 +43127,22 @@ void main() {
     const commonLimits = { minDistance: 1.5, maxDistance: 12, minPolar: 0.15, maxPolar: Math.PI - 0.15, minWorldY: 0.18 };
     const overviewCamera = addCamera({
       name: "Overview",
-      position: [0, 2.4, 5.5],
-      orbit: { azimuth: 0, polar: 1.159, distance: 6, ...commonLimits }
+      position: [0, 3.8, 7.8],
+      orbit: { azimuth: 0, polar: 1.159, distance: 8.2, ...commonLimits }
     });
     const sideCamera = addCamera({
       name: "Side",
-      position: [5.2, 1.2, 0.4],
+      position: [7.2, 3, 0.6],
       fov: 42,
-      orbit: { azimuth: 1.494, polar: 1.345, distance: 5.35, ...commonLimits }
+      orbit: { azimuth: 1.494, polar: 1.345, distance: 7.5, ...commonLimits }
     });
     world.add(overviewCamera, components.ActiveCamera, true);
     const orbit = createOrbitSystem({ world, components, THREE: three.THREE });
     const cameras = createCameraSystem({ world, components, three });
     const lights = createLightSystem({ world, components, three });
     const surfaces = createSurfaceSystem({ components, entity: witness });
-    const production = createProductionSystem({ world, components, THREE: three.THREE, scene: three.scene });
     const collection = createCollectionSystem({ world, components, scene: three.scene });
+    const orbital = createOrbitalSystem({ world, components });
     orbit.applyAll();
     function addLight({ name, kind, color, groundColor, intensity, position, castShadow = false }) {
       const id = world.entity();
@@ -42994,6 +43169,7 @@ void main() {
       cameras.render();
     }
     function frame(time) {
+      const elapsed = time / 1e3;
       const dt = Math.min(0.05, Math.max(0, (time - lastFrame) / 1e3));
       lastFrame = time;
       fpsFrames += 1;
@@ -43002,14 +43178,14 @@ void main() {
         fpsWindowStart = time;
         fpsFrames = 0;
       }
-      production.update(time);
+      orbital.update(elapsed);
+      ringField.update(dt, elapsed);
       collection.update(dt);
-      const producer = components.Producer.get(witness);
       const inventory = components.Inventory.get(cube);
       const ballSurface = components.Surface.get(witness);
       const cubeSurface = components.Surface.get(cube);
-      if (producer && ballSurface) ballSurface.copy.short = `A ball that has produced ${producer.produced} small brass balls.`;
-      if (inventory && cubeSurface) cubeSurface.copy.short = `A cube holding ${inventory.count} of ${inventory.capacity} small brass balls.`;
+      if (ballSurface) ballSurface.copy.short = `A living orbital field of 1,600 brass bearings, resonant moons, and local perturbations.`;
+      if (inventory && cubeSurface) cubeSurface.copy.short = `A cube that has stolen ${inventory.count} ring particles. It has no capacity limit.`;
       surfaces.refreshOpen();
       draw();
       requestAnimationFrame(frame);
@@ -43020,15 +43196,14 @@ void main() {
       components,
       events,
       three,
-      systems: { renderSync, cameras, orbit, lights, surfaces, production, collection },
-      entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
+      systems: { renderSync, cameras, orbit, lights, surfaces, collection, orbital, ringField },
+      entities: { witness, cube, resonantMoons, clearingMoon, overviewCamera, sideCamera, skyLight, keyLight },
       inspect: () => ({
         entities: world.alive.size,
         build: globalThis.__ACCESSIBILITY_BUILD__,
         pixelRatio: three.renderer.getPixelRatio(),
         activeCamera: cameras.activeId(),
         behavior: {
-          producer: components.Producer.get(witness),
           inventory: components.Inventory.get(cube),
           looseCollectibles: world.query(components.Collectible).length
         },
@@ -43122,9 +43297,20 @@ void main() {
       if (!camera) return null;
       const candidates = [app.entities.witness, app.entities.cube].map((entity) => ({ entity, object: app.components.RenderObject.get(entity)?.object })).filter((candidate) => candidate.object);
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(candidates.map((candidate) => candidate.object), false);
+      const hits = raycaster.intersectObjects(candidates.map((candidate) => candidate.object), true);
       if (!hits.length) return null;
-      return candidates.find((candidate) => candidate.object === hits[0].object)?.entity ?? null;
+      for (const hit of hits) {
+        const owner = candidates.find((candidate) => {
+          let object = hit.object;
+          while (object) {
+            if (object === candidate.object) return true;
+            object = object.parent;
+          }
+          return false;
+        });
+        if (owner) return owner.entity;
+      }
+      return null;
     }
     world.addEventListener("pointerdown", (event) => {
       starts.set(event.pointerId, { x: event.clientX, y: event.clientY, t: performance.now() });

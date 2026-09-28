@@ -35,8 +35,9 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     card.style.top = Math.max(margin, Math.min(innerHeight - rect.height - margin, state.anchor.y - rect.height / 2)) + "px";
   }
 
-  function sync() {
+  function sync({ settling = false } = {}) {
     card.hidden = !state.open;
+    card.dataset.settling = String(settling && state.open);
     title.textContent = definition.title;
     kicker.textContent = definition.kicker;
     description.textContent = definition.copy[state.textQuantity] || definition.copy.short;
@@ -55,7 +56,12 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     collapse.textContent = state.collapsed ? "Expand content" : "Collapse";
     expand.setAttribute("aria-pressed", String(state.expanded));
     expand.textContent = state.expanded ? "Shrink" : "Expand";
-    if (state.open) requestAnimationFrame(place);
+    if (state.open) {
+      requestAnimationFrame(() => {
+        place();
+        card.dataset.settling = "false";
+      });
+    }
   }
 
   function select(entityId) {
@@ -69,7 +75,7 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     select(entityId);
     state.open = true;
     state.anchor = { x, y };
-    sync();
+    sync({ settling: true });
   }
 
   function dismiss() {

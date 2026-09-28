@@ -37,7 +37,6 @@ export function installInspection({ app, root }) {
 
   world.addEventListener("pointerdown", event => {
     starts.set(event.pointerId, { x: event.clientX, y: event.clientY, t: performance.now() });
-    if (!card?.hidden && !hitWitness(event.clientX, event.clientY)) card.hidden = true;
   });
 
   world.addEventListener("pointerup", event => {

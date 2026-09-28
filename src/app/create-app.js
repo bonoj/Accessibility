@@ -144,6 +144,7 @@ export function createApp({ worldMount, diagnostics }) {
     const cubeSurface = components.Surface.get(cube);
     if (producer && ballSurface) ballSurface.copy.short = `A ball that has produced ${producer.produced} small brass balls.`;
     if (inventory && cubeSurface) cubeSurface.copy.short = `A cube holding ${inventory.count} of ${inventory.capacity} small brass balls.`;
+    surfaces.refreshOpen();
 
     orbit.applyAll();
     lights.syncAll();

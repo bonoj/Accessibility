@@ -16,10 +16,15 @@ export function createApp({ worldMount, diagnostics }) {
   const witness = world.entity();
   const object = new three.THREE.Mesh(
     new three.THREE.IcosahedronGeometry(0.72, 2),
-    new three.THREE.MeshStandardMaterial({ color: 0xe6e2d8, roughness: 0.72, metalness: 0.04 })
+    new three.THREE.MeshStandardMaterial({ color: 0xb8c4ca, roughness: 0.68, metalness: 0.04 })
   );
   object.castShadow = true;
   three.scene.add(object);
+
+  // Orientation witness: world-fixed ground makes camera motion perceptible without labels.
+  const grid = new three.THREE.GridHelper(14, 14, 0x777777, 0xc8c8c8);
+  grid.position.y = -1.05;
+  three.scene.add(grid);
   world.add(witness, components.Transform, {
     position: new three.THREE.Vector3(0, 0, 0),
     rotation: new three.THREE.Euler(),

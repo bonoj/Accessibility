@@ -51,9 +51,33 @@ A person should not need a complete specification, correct ontology, programming
 
 The environment may help incomplete ideas become concrete through interaction and evidence.
 
+### Multimodality is the working response to accessibility breadth
+
+Accessibility pressure appears across many domains: perception, motor interaction, language, legibility, attention, technical vocabulary, and others we have not yet encountered.
+
+Do not respond by constructing a separate accommodation tree for every domain. That approach multiplies every capability by every accessibility concern and risks fragmenting both the interface and the world.
+
+The current working direction is to keep intention and world state semantic while allowing interaction and presentation to be multimodal. Different forms of expression should be able to converge on shared semantic events and identities; different forms of presentation should be able to expose the same underlying world facts.
+
+This is a core decomposition, not a claim that every modality is interchangeable or that one universal interface exists.
+
+### ECS is currently chosen as separation machinery
+
+The first executable work will use an entity-component-system style architecture because it offers a concrete way to keep semantic state, event handling, construction behavior, input interpretation, and presentation concerns separable without requiring each entity to understand every modality.
+
+Here ECS means primarily **data-driven state and event handling**, not allegiance to a game-engine pattern.
+
+A construction system should not need to know whether an entity was referenced by speech, a coarse tap, text, an image-mediated reference, or another channel if those interactions can resolve to the same semantic event. Likewise, a semantic fact should not need to fork merely because it can be represented spatially, as very large reflowable text, through speech, or through another presentation system.
+
+ECS is therefore an implementation hypothesis chosen for the accessibility problem we currently see: many independently changing interaction and presentation concerns acting on one coherent semantic world.
+
+Its usefulness must still be tested through executable evidence. If it fails to preserve that separation or creates greater barriers than it removes, the architecture may change.
+
 ### Executable evidence earns architecture
 
-Do not prematurely decide that the correct apparatus is Foundry, a node graph, a canvas, a conversational agent, a voice interface, ECS, or any other favored mechanism.
+Do not prematurely decide that the correct apparatus is Foundry, a node graph, a canvas, a conversational agent, a voice interface, or any other favored mechanism merely because it is familiar.
+
+ECS has now been selected for the first implementation because it directly addresses an observed separation problem, but that selection remains falsifiable.
 
 Build bounded probes. Observe use. Promote mechanisms and vocabulary when they prove useful.
 

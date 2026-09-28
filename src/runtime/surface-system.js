@@ -1,7 +1,14 @@
 export function createSurfaceSystem({ components, entity, root = document }) {
-  const definition = components.Surface.get(entity);
-  const state = components.SurfaceState.get(entity);
-  if (!definition || !state) throw new Error("SurfaceSystem requires Surface and SurfaceState.");
+  let activeEntity = entity;
+
+  function resolve(entityId = activeEntity) {
+    const definition = components.Surface.get(entityId);
+    const state = components.SurfaceState.get(entityId);
+    if (!definition || !state) throw new Error("SurfaceSystem requires Surface and SurfaceState.");
+    return { definition, state };
+  }
+
+  let { definition, state } = resolve();
 
   const card = root.querySelector("#entity-card");
   const body = root.querySelector("#surface-body");
@@ -51,7 +58,15 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     if (state.open) requestAnimationFrame(place);
   }
 
-  function openAt(x, y) {
+  function select(entityId) {
+    if (entityId === activeEntity) return;
+    ({ definition, state } = resolve(entityId));
+    activeEntity = entityId;
+    sync();
+  }
+
+  function openAt(x, y, entityId = activeEntity) {
+    select(entityId);
     state.open = true;
     state.anchor = { x, y };
     sync();
@@ -81,5 +96,10 @@ export function createSurfaceSystem({ components, entity, root = document }) {
 
   sync();
   addEventListener("resize", place);
-  return { definition, state, sync, place, openAt, dismiss, toggleCollapsed, toggleExpanded, patch };
+  return {
+    get entity() { return activeEntity; },
+    get definition() { return definition; },
+    get state() { return state; },
+    sync, place, select, openAt, dismiss, toggleCollapsed, toggleExpanded, patch
+  };
 }

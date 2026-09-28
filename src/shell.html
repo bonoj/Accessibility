@@ -17,7 +17,10 @@
         <p class="surface-kicker">Scene entity</p>
         <h1 id="entity-title">Ball</h1>
       </div>
-      <button id="surface-dismiss" type="button">Dismiss</button>
+      <div class="surface-header-actions">
+        <button id="surface-collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
+        <button id="surface-dismiss" type="button">Dismiss</button>
+      </div>
     </header>
 
     <div id="surface-body">
@@ -50,7 +53,6 @@
         <div class="surface-actions">
           <button id="ball-action" type="button">Do something</button>
           <button id="surface-expand" type="button" aria-pressed="false">Expand</button>
-          <button id="surface-collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
         </div>
         <output id="action-status" aria-live="polite">Nothing has happened yet.</output>
       </div>

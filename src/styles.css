@@ -34,3 +34,35 @@ legend { padding: 0 .35rem; font-weight: 700; }
 .orbit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .hint { margin: .8rem 0 0; font-size: .9rem; opacity: .75; }
 #world { touch-action: none; }
+
+/* On narrow screens language is a recoverable presentation surface, not a competing page. */
+@media (max-width: 51.999rem) {
+  body { overflow: hidden; }
+  #app { position: relative; display: block; height: 100dvh; min-height: 0; }
+  #world { height: 100%; min-height: 0; }
+  #language {
+    position: absolute; z-index: 20; inset: auto 0 0;
+    max-height: min(72dvh, 44rem); overflow: auto;
+    padding: 0 clamp(1rem, 5vw, 2rem) max(1rem, env(safe-area-inset-bottom));
+    background: Canvas;
+    border-top: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+    transition: max-height 180ms ease;
+  }
+  #language-content { padding-top: .4rem; }
+  #language-handle {
+    position: sticky; top: 0; z-index: 2;
+    width: 100%; min-height: 4rem; margin: 0; padding: .5rem;
+    display: grid; place-items: center; gap: .25rem;
+    border: 0; border-radius: 0; background: Canvas;
+    touch-action: none;
+  }
+  .handle-mark { display: block; width: min(7rem, 32vw); height: .35rem; border-radius: 999px; background: currentColor; opacity: .42; }
+  .handle-label { font-weight: 750; }
+  #app[data-sheet="collapsed"] #language { max-height: 4rem; overflow: hidden; }
+  #app[data-sheet="collapsed"] #language-content { visibility: hidden; }
+  #app[data-sheet="collapsed"] #language-handle { position: relative; }
+  #app[data-allocation="language"] #language { max-height: 90dvh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #language { transition: none !important; }
+}

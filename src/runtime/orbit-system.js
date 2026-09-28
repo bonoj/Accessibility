@@ -44,7 +44,7 @@ export function createOrbitSystem({ world, components, THREE }) {
     orbit.azimuth += azimuth;
     orbit.polar += polar;
     orbit.distance += distance;
-    return apply(id);
+    return true;
   }
 
   function inspect(id) {

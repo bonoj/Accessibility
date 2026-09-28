@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Accessibility — executable research into accessible human–model construction.">
+  <title>Accessibility</title>
+  <style>
+/* src/styles.css */
+:root {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+  color-scheme: light dark;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+body {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: Canvas;
+  color: CanvasText;
+}
+.surface {
+  width: min(42rem, 90vw);
+  padding: 2rem;
+}
+.eyebrow {
+  letter-spacing: .12em;
+  opacity: .65;
+}
+h1 {
+  font-size: clamp(2rem, 8vw, 4rem);
+  line-height: 1;
+  margin: .25em 0;
+}
+p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+.build {
+  font-family: ui-monospace, monospace;
+  font-size: .75rem;
+  opacity: .5;
+}
+#diagnostics {
+  position: fixed;
+  inset: auto 1rem 1rem;
+  max-height: 45vh;
+  overflow: auto;
+  padding: 1rem;
+  background: Canvas;
+  color: CanvasText;
+  border: 2px solid currentColor;
+  white-space: pre-wrap;
+  font-family: ui-monospace, monospace;
+}
+</style>
+</head>
+<body>
+  <main id="app" aria-live="polite"></main>
+  <div id="diagnostics" role="alert" hidden></div>
+  <script>globalThis.__ACCESSIBILITY_BUILD__ = "363c5e187debd9ff2dd944f36e2bfc1f282fd239";</script>
+  <script>
+(() => {
+  // src/main.js
+  var app = document.querySelector("#app");
+  var diagnostics = document.querySelector("#diagnostics");
+  function showFailure(error) {
+    diagnostics.hidden = false;
+    diagnostics.textContent = `Startup failure: ${error?.stack || error}`;
+  }
+  try {
+    app.innerHTML = `
+    <section class="surface">
+      <p class="eyebrow">ACCESSIBILITY</p>
+      <h1>Construction starts here.</h1>
+      <p>This is the executable surface. It is intentionally almost empty.</p>
+      <p class="build">build ${globalThis.__ACCESSIBILITY_BUILD__}</p>
+    </section>
+  `;
+  } catch (error) {
+    showFailure(error);
+    throw error;
+  }
+  globalThis.addEventListener("error", (event) => showFailure(event.error || event.message));
+  globalThis.addEventListener("unhandledrejection", (event) => showFailure(event.reason));
+})();
+</script>
+</body>
+</html>

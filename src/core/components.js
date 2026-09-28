@@ -14,6 +14,7 @@ export function createCoreComponents(world) {
     Producer: world.component("Producer"),
     Inventory: world.component("Inventory"),
     Collectible: world.component("Collectible"),
+    OrbitingBody: world.component("OrbitingBody"),
 
     // Optional behavior data. Cameras without it remain ordinary static camera entities.
     OrbitBehavior: world.component("OrbitBehavior")

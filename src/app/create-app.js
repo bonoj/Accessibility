@@ -7,6 +7,8 @@ import { createCameraSystem } from "../runtime/camera-system.js";
 import { createOrbitSystem } from "../runtime/orbit-system.js";
 import { createLightSystem } from "../runtime/light-system.js";
 import { createSurfaceSystem } from "../runtime/surface-system.js";
+import { createProductionSystem } from "../runtime/production-system.js";
+import { createCollectionSystem } from "../runtime/collection-system.js";
 import { adaptiveEntitySurfaceProbe } from "../probes/adaptive-entity-surface.js";
 
 export function createApp({ worldMount, diagnostics }) {
@@ -42,6 +44,7 @@ export function createApp({ worldMount, diagnostics }) {
   const probe = adaptiveEntitySurfaceProbe.witness;
   world.add(witness, components.Surface, structuredClone(probe.surface));
   world.add(witness, components.SurfaceState, structuredClone(probe.surfaceState));
+  world.add(witness, components.Producer, { kind: "bearing", intervalMs: 2200, produced: 0, nextAt: null });
 
   // A deliberately boring second entity proves that the adaptive surface belongs
   // to ECS identity rather than to bespoke Ball UI.
@@ -72,6 +75,7 @@ export function createApp({ worldMount, diagnostics }) {
     ...structuredClone(probe.surfaceState),
     actionStatus: "Nothing has happened yet."
   });
+  world.add(cube, components.Inventory, { accepts: "bearing", count: 0, capacity: 10 });
 
   function addCamera({ name, projection = "perspective", position, orbit, fov = 48, height = 5 }) {
     const id = world.entity();
@@ -106,6 +110,8 @@ export function createApp({ worldMount, diagnostics }) {
   const cameras = createCameraSystem({ world, components, three });
   const lights = createLightSystem({ world, components, three });
   const surfaces = createSurfaceSystem({ components, entity: witness });
+  const production = createProductionSystem({ world, components, THREE: three.THREE, scene: three.scene });
+  const collection = createCollectionSystem({ world, components, scene: three.scene });
   orbit.applyAll();
 
   function addLight({ name, kind, color, groundColor, intensity, position, castShadow = false }) {
@@ -124,11 +130,26 @@ export function createApp({ worldMount, diagnostics }) {
   const keyLight = addLight({ name: "Key", kind: "directional", color: 0xfff5df, intensity: 2.4, position: [4, 7, 5], castShadow: true });
   lights.syncAll();
 
-  function render() {
+  let lastFrame = performance.now();
+  let frameHandle = null;
+  function render(time = performance.now()) {
+    const dt = Math.min(0.05, Math.max(0, (time - lastFrame) / 1000));
+    lastFrame = time;
+    production.update(time);
+    collection.update(dt);
+
+    const producer = components.Producer.get(witness);
+    const inventory = components.Inventory.get(cube);
+    const ballSurface = components.Surface.get(witness);
+    const cubeSurface = components.Surface.get(cube);
+    if (producer && ballSurface) ballSurface.copy.short = `A ball that has produced ${producer.produced} small brass balls.`;
+    if (inventory && cubeSurface) cubeSurface.copy.short = `A cube holding ${inventory.count} of ${inventory.capacity} small brass balls.`;
+
     orbit.applyAll();
     lights.syncAll();
     renderSync();
     cameras.render();
+    frameHandle = requestAnimationFrame(render);
   }
   render();
 
@@ -137,7 +158,7 @@ export function createApp({ worldMount, diagnostics }) {
     components,
     events,
     three,
-    systems: { renderSync, cameras, orbit, lights, surfaces },
+    systems: { renderSync, cameras, orbit, lights, surfaces, production, collection },
     entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
     render,
     inspect: () => ({
@@ -145,6 +166,11 @@ export function createApp({ worldMount, diagnostics }) {
       build: globalThis.__ACCESSIBILITY_BUILD__,
       pixelRatio: three.renderer.getPixelRatio(),
       activeCamera: cameras.activeId(),
+      behavior: {
+        producer: components.Producer.get(witness),
+        inventory: components.Inventory.get(cube),
+        looseCollectibles: world.query(components.Collectible).length
+      },
       surface: {
         definition: components.Surface.get(witness),
         state: components.SurfaceState.get(witness)

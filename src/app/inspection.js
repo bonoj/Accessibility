@@ -24,9 +24,20 @@ export function installInspection({ app, root }) {
       .map(entity => ({ entity, object: app.components.RenderObject.get(entity)?.object }))
       .filter(candidate => candidate.object);
     raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObjects(candidates.map(candidate => candidate.object), false);
+    const hits = raycaster.intersectObjects(candidates.map(candidate => candidate.object), true);
     if (!hits.length) return null;
-    return candidates.find(candidate => candidate.object === hits[0].object)?.entity ?? null;
+    for (const hit of hits) {
+      const owner = candidates.find(candidate => {
+        let object = hit.object;
+        while (object) {
+          if (object === candidate.object) return true;
+          object = object.parent;
+        }
+        return false;
+      });
+      if (owner) return owner.entity;
+    }
+    return null;
   }
 
   world.addEventListener("pointerdown", event => {

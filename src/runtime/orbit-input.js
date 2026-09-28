@@ -2,35 +2,31 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
   const pointers = new Map();
   let pinchDistance = null;
 
-  function notify() {
-    render();
-    onChange?.();
-  }
-
+  function notify() { render(); onChange?.(); }
   function orbitBy(dx, dy) {
     const id = activeCamera();
-    if (id == null) return;
-    if (orbit.adjust(id, { azimuth: -dx * 0.008, polar: dy * 0.008 })) notify();
+    if (id != null && orbit.adjust(id, { azimuth: -dx * 0.008, polar: dy * 0.008 })) notify();
   }
-
   function zoomBy(delta) {
     const id = activeCamera();
-    if (id == null) return;
-    if (orbit.adjust(id, { distance: delta })) notify();
+    if (id != null && orbit.adjust(id, { distance: delta })) notify();
   }
 
   element.addEventListener("pointerdown", event => {
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    element.setPointerCapture?.(event.pointerId);
   });
 
   element.addEventListener("pointermove", event => {
     const previous = pointers.get(event.pointerId);
     if (!previous) return;
-    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const next = { x: event.clientX, y: event.clientY };
+    pointers.set(event.pointerId, next);
 
     if (pointers.size === 1) {
-      orbitBy(event.clientX - previous.x, event.clientY - previous.y);
+      const dx = next.x - previous.x;
+      const dy = next.y - previous.y;
+      // Native vertical page/browser gestures win. A clearly horizontal gesture is spatial intent.
+      if (Math.abs(dx) > Math.abs(dy) * 1.15) orbitBy(dx, 0);
       return;
     }
 
@@ -50,6 +46,7 @@ export function installOrbitInput({ element, activeCamera, orbit, render, onChan
   element.addEventListener("pointercancel", release);
 
   element.addEventListener("wheel", event => {
+    if (!(event.ctrlKey || event.metaKey)) return;
     event.preventDefault();
     zoomBy(event.deltaY * 0.006);
   }, { passive: false });

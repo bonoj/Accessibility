@@ -9,6 +9,8 @@ import { createLightSystem } from "../runtime/light-system.js";
 import { createSurfaceSystem } from "../runtime/surface-system.js";
 import { createProductionSystem } from "../runtime/production-system.js";
 import { createCollectionSystem } from "../runtime/collection-system.js";
+import { createOrbitalSystem } from "../runtime/orbital-system.js";
+import { createRingFieldSystem } from "../runtime/ring-field-system.js";
 import { adaptiveEntitySurfaceProbe } from "../probes/adaptive-entity-surface.js";
 
 export function createApp({ worldMount, diagnostics }) {
@@ -20,6 +22,7 @@ export function createApp({ worldMount, diagnostics }) {
 
   const witness = world.entity();
   const saturn = new three.THREE.Group();
+  saturn.rotation.z = -0.16;
   const planet = new three.THREE.Mesh(
     new three.THREE.SphereGeometry(0.82, 32, 20),
     new three.THREE.MeshStandardMaterial({ color: 0xc9b88d, roughness: 0.76, metalness: 0.02 })
@@ -27,47 +30,9 @@ export function createApp({ worldMount, diagnostics }) {
   planet.scale.y = 0.91;
   planet.castShadow = true;
   saturn.add(planet);
-
-  // A thousand individually visible bearings make the rings without turning them
-  // into a single opaque mesh. Deliberate radial gaps keep the bands legible.
-  const ringGeometry = new three.THREE.SphereGeometry(0.025, 5, 4);
-  const ringMaterial = new three.THREE.MeshStandardMaterial({ color: 0xb08d57, roughness: 0.5, metalness: 0.5 });
-  const rings = new three.THREE.InstancedMesh(ringGeometry, ringMaterial, 1000);
-  const dummy = new three.THREE.Object3D();
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-  const allowedBands = [[1.15, 1.38], [1.47, 1.72], [1.82, 2.08]];
-  for (let i = 0; i < 1000; i += 1) {
-    const band = allowedBands[i % allowedBands.length];
-    const t = ((i * 0.6180339887498949) % 1);
-    const radius = band[0] + (band[1] - band[0]) * t;
-    const angle = i * goldenAngle;
-    dummy.position.set(Math.cos(angle) * radius, (Math.sin(i * 12.9898) * 0.018), Math.sin(angle) * radius);
-    dummy.scale.setScalar(0.72 + (i % 7) * 0.055);
-    dummy.updateMatrix();
-    rings.setMatrixAt(i, dummy.matrix);
-  }
-  rings.instanceMatrix.needsUpdate = true;
-  rings.castShadow = true;
-  saturn.add(rings);
-
-  // Three moons orbit in a 4:2:1 angular-frequency resonance. Their motion is
-  // intentionally slow enough to read as a system rather than decorative jitter.
-  const moonSpecs = [
-    { radius: 2.55, size: 0.13, rate: 0.32, phase: 0.0 },
-    { radius: 3.02, size: 0.16, rate: 0.16, phase: 1.75 },
-    { radius: 3.55, size: 0.20, rate: 0.08, phase: 3.45 }
-  ];
-  const moons = moonSpecs.map(spec => {
-    const moon = new three.THREE.Mesh(
-      new three.THREE.SphereGeometry(spec.size, 12, 8),
-      new three.THREE.MeshStandardMaterial({ color: 0xd7d3c8, roughness: 0.88 })
-    );
-    moon.castShadow = true;
-    saturn.add(moon);
-    return { ...spec, object: moon };
-  });
   three.scene.add(saturn);
   const object = saturn;
+  const ringField = createRingFieldSystem({ THREE: three.THREE, parent: saturn, count: 1600 });
 
   // Minimal physical scene: a real floor rather than an orientation-only grid.
   const floor = new three.THREE.Mesh(
@@ -88,6 +53,40 @@ export function createApp({ worldMount, diagnostics }) {
   world.add(witness, components.Surface, structuredClone(probe.surface));
   world.add(witness, components.SurfaceState, structuredClone(probe.surfaceState));
   world.add(witness, components.Producer, { kind: "bearing", intervalMs: 2200, produced: 0, nextAt: null });
+
+  const moonSpecs = [
+    { radius: 3.35, size: 0.13, rate: 0.32, phase: 0.0 },
+    { radius: 3.85, size: 0.16, rate: 0.16, phase: 1.75 },
+    { radius: 4.45, size: 0.20, rate: 0.08, phase: 3.45 }
+  ];
+  const resonantMoons = moonSpecs.map((spec, index) => {
+    const id = world.entity();
+    const moon = new three.THREE.Mesh(
+      new three.THREE.SphereGeometry(spec.size, 12, 8),
+      new three.THREE.MeshStandardMaterial({ color: 0xd7d3c8, roughness: 0.88 })
+    );
+    moon.castShadow = true;
+    saturn.add(moon);
+    world.add(id, components.OrbitingBody, {
+      object: moon, radius: spec.radius, rate: spec.rate, phase: spec.phase,
+      verticalAmplitude: 0.035 + index * 0.012, verticalFrequency: 0.7
+    });
+    return id;
+  });
+
+  const clearingMoon = world.entity();
+  const clearingMoonObject = new three.THREE.Mesh(
+    new three.THREE.SphereGeometry(0.09, 12, 8),
+    new three.THREE.MeshStandardMaterial({ color: 0xe4dfd2, roughness: 0.9 })
+  );
+  clearingMoonObject.castShadow = true;
+  saturn.add(clearingMoonObject);
+  const clearingOrbit = {
+    object: clearingMoonObject, radius: 2.27, rate: 0.095, phase: 0.8,
+    verticalAmplitude: 0.055, verticalFrequency: 0.9
+  };
+  world.add(clearingMoon, components.OrbitingBody, clearingOrbit);
+  ringField.addClearer({ orbit: clearingOrbit, influenceRadius: 0.26 });
 
   // A deliberately boring second entity proves that the adaptive surface belongs
   // to ECS identity rather than to bespoke Ball UI.
@@ -155,6 +154,7 @@ export function createApp({ worldMount, diagnostics }) {
   const surfaces = createSurfaceSystem({ components, entity: witness });
   const production = createProductionSystem({ world, components, THREE: three.THREE, scene: three.scene });
   const collection = createCollectionSystem({ world, components, scene: three.scene });
+  const orbital = createOrbitalSystem({ world, components });
   orbit.applyAll();
 
   function addLight({ name, kind, color, groundColor, intensity, position, castShadow = false }) {
@@ -187,11 +187,6 @@ export function createApp({ worldMount, diagnostics }) {
 
   function frame(time) {
     const elapsed = time / 1000;
-    for (const moon of moons) {
-      const angle = moon.phase + elapsed * moon.rate;
-      moon.object.position.set(Math.cos(angle) * moon.radius, 0.08 * Math.sin(angle * 0.7), Math.sin(angle) * moon.radius);
-    }
-
     const dt = Math.min(0.05, Math.max(0, (time - lastFrame) / 1000));
     lastFrame = time;
     fpsFrames += 1;
@@ -201,6 +196,8 @@ export function createApp({ worldMount, diagnostics }) {
       fpsFrames = 0;
     }
 
+    orbital.update(elapsed);
+    ringField.update(dt, elapsed);
     production.update(time);
     collection.update(dt);
 
@@ -223,8 +220,8 @@ export function createApp({ worldMount, diagnostics }) {
     components,
     events,
     three,
-    systems: { renderSync, cameras, orbit, lights, surfaces, production, collection },
-    entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
+    systems: { renderSync, cameras, orbit, lights, surfaces, production, collection, orbital, ringField },
+    entities: { witness, cube, resonantMoons, clearingMoon, overviewCamera, sideCamera, skyLight, keyLight },
     inspect: () => ({
       entities: world.alive.size,
       build: globalThis.__ACCESSIBILITY_BUILD__,

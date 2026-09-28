@@ -83,7 +83,7 @@ export function createSurfaceSystem({ components, entity, root = document }) {
     n.expand.setAttribute("aria-pressed", String(state.expanded));
     n.expand.textContent = state.expanded ? "Shrink" : "Expand";
     if (entityId === activeEntity && variant) variant.value = state.variant;
-    if (state.open) {
+    if (state.open && settling) {
       requestAnimationFrame(() => {
         place(entityId);
         n.card.dataset.settling = "false";

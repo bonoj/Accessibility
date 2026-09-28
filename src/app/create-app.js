@@ -134,8 +134,15 @@ export function createApp({ worldMount, diagnostics }) {
   let fpsWindowStart = lastFrame;
   let fpsFrames = 0;
   const fpsCounter = document.querySelector("#fps-counter");
-  let frameHandle = null;
-  function render(time = performance.now()) {
+
+  function draw() {
+    orbit.applyAll();
+    lights.syncAll();
+    renderSync();
+    cameras.render();
+  }
+
+  function frame(time) {
     const dt = Math.min(0.05, Math.max(0, (time - lastFrame) / 1000));
     lastFrame = time;
     fpsFrames += 1;
@@ -144,6 +151,7 @@ export function createApp({ worldMount, diagnostics }) {
       fpsWindowStart = time;
       fpsFrames = 0;
     }
+
     production.update(time);
     collection.update(dt);
 
@@ -155,13 +163,12 @@ export function createApp({ worldMount, diagnostics }) {
     if (inventory && cubeSurface) cubeSurface.copy.short = `A cube holding ${inventory.count} of ${inventory.capacity} small brass balls.`;
     surfaces.refreshOpen();
 
-    orbit.applyAll();
-    lights.syncAll();
-    renderSync();
-    cameras.render();
-    frameHandle = requestAnimationFrame(render);
+    draw();
+    requestAnimationFrame(frame);
   }
-  render();
+
+  draw();
+  requestAnimationFrame(frame);
 
   return {
     world,
@@ -170,7 +177,7 @@ export function createApp({ worldMount, diagnostics }) {
     three,
     systems: { renderSync, cameras, orbit, lights, surfaces, production, collection },
     entities: { witness, cube, overviewCamera, sideCamera, skyLight, keyLight },
-    render,
+    render: draw,
     inspect: () => ({
       entities: world.alive.size,
       build: globalThis.__ACCESSIBILITY_BUILD__,

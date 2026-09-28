@@ -11,11 +11,61 @@
   <main id="app">
     <section id="world" aria-label="Spatial workstation. Drag to orbit. Pinch or use the mouse wheel to change distance."></section>
   </main>
-  <section id="entity-card" hidden aria-live="polite">
-    <h1>Ball</h1>
-    <p>A simple object in the scene.</p>
+  <section id="entity-card" hidden aria-labelledby="entity-title">
+    <header class="surface-header">
+      <div>
+        <p class="surface-kicker">Scene entity</p>
+        <h1 id="entity-title">Ball</h1>
+      </div>
+      <button id="surface-dismiss" type="button">Dismiss</button>
+    </header>
+
+    <div id="surface-body">
+      <p id="entity-description">A simple object in the scene.</p>
+
+      <div class="surface-controls" aria-label="Ball controls">
+        <label>
+          Text quantity
+          <select id="text-quantity">
+            <option value="short">Short</option>
+            <option value="medium">Medium</option>
+            <option value="lots">Lots</option>
+          </select>
+        </label>
+
+        <label>
+          Font size
+          <select id="font-size">
+            <option value="normal">Normal</option>
+            <option value="large">Large</option>
+            <option value="huge">Huge</option>
+          </select>
+        </label>
+
+        <label>
+          Amount <output id="amount-value">50</output>
+          <input id="amount-slider" type="range" min="0" max="100" value="50">
+        </label>
+
+        <div class="surface-actions">
+          <button id="ball-action" type="button">Do something</button>
+          <button id="surface-expand" type="button" aria-pressed="false">Expand</button>
+          <button id="surface-collapse" type="button" aria-expanded="true" aria-controls="surface-body">Collapse</button>
+        </div>
+        <output id="action-status" aria-live="polite">Nothing has happened yet.</output>
+      </div>
+    </div>
   </section>
   <aside id="debug-tools" aria-label="Temporary build controls">
+    <label id="variant-control">
+      Surface
+      <select id="surface-variant" aria-label="Experimental surface variant">
+        <option value="float">Float</option>
+        <option value="edge">Edge</option>
+        <option value="center">Center</option>
+        <option value="sheet">Sheet</option>
+      </select>
+    </label>
     <output id="build-id">build …</output>
     <button id="debug-refresh" type="button">Refresh</button>
   </aside>

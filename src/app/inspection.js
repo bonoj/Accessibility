@@ -11,8 +11,7 @@ export function installInspection({ app, root }) {
   installOrbitInput({
     element: world,
     activeCamera: () => app.systems.cameras.activeId(),
-    orbit: app.systems.orbit,
-    render: app.render
+    orbit: app.systems.orbit
   });
 
   function hitSurfaceEntity(x, y) {
